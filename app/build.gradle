@@ -1,0 +1,99 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion rootProject.ext.sdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+    defaultConfig {
+        applicationId "com.feiling.video"
+        minSdkVersion 16
+        targetSdkVersion rootProject.ext.sdkVersion
+        versionCode 1
+        versionName "1.0.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        incremental false
+    }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/androidx.legacy_legacy-support-core-utils.version'
+        exclude 'META-INF/androidx.loader_loader.version'
+        exclude 'META-INF/androidx.localbroadcastmanager_localbroadcastmanager.version'
+        exclude 'META-INF/androidx.viewpager_viewpager.version'
+        exclude 'META-INF/androidx.swiperefreshlayout_swiperefreshlayout.version'
+        exclude 'META-INF/androidx.asynclayoutinflater_asynclayoutinflater.version'
+        exclude 'META-INF/androidx.cursoradapter_cursoradapter.version'
+        exclude 'META-INF/androidx.drawerlayout_drawerlayout.version'
+
+    }
+}
+
+allprojects {
+    repositories {
+        maven { url "https://jitpack.io" }
+    }
+
+//    configurations.all {
+//        resolutionStrategy.force 'com.android.support:support-v4:27.1.1'
+//
+//    }
+}
+
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support.constraint:constraint-layout:1.1.2'
+    testCompile 'junit:junit:4.12'
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+
+
+
+    compile project(':http')
+    compile project(':qmui')
+    //解决lib添加 数量过的导致无法打包
+    compile 'com.android.support:multidex:1.0.1'
+    compile 'org.greenrobot:eventbus:3.0.0'
+    compile 'com.jaeger.statusbarutil:library:1.4.0'
+    compile 'com.r0adkll:slidableactivity:2.0.5'
+    //设置系统actionBar
+    compile 'com.readystatesoftware.systembartint:systembartint:1.0.3'
+    compile 'com.android.support:support-annotations:28.0.0'
+    //https://link.jianshu.com/?t=http://www.recyclerview.org/
+    compile 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.30'
+    compile 'com.google.code.gson:gson:2.8.1'
+    compile 'com.google.zxing:core:3.3.0'
+    compile 'com.contrarywind:Android-PickerView:4.1.0'
+    //https://github.com/anzaizai/EasySwipeMenuLayout item 条目滑动删除
+//    compile 'com.github.anzaizai:EasySwipeMenuLayout:1.1.2'
+    //    compile project(':multi-image-selector')
+    compile 'com.youth.banner:banner:1.4.4'
+    compile 'com.orhanobut:logger:2.2.0'
+    compile 'com.github.bumptech.glide:glide:3.5.2'
+    //https://github.com/liaoinstan/SpringView
+    //compile 'com.liaoinstan.springview:library:1.5.0'
+    //other Headers/Footers, choose one or more that you like
+    /*compile 'com.liaoinstan.springview:AcfunHeader:1.5.0'         //AcFun style （header and footer）
+        compile 'com.liaoinstan.springview:AliHeader:1.5.0'           //alitrip style （header and footer）
+        compile 'com.liaoinstan.springview:MeituanHeader:1.5.0'       //meituan style （header and footer）
+        compile 'com.liaoinstan.springview:RotationHeader:1.5.0'      //mechanical gear style （header and footer）
+        compile 'com.liaoinstan.springview:WeixinHeader:1.5.0'        //weichat Mini Program header（only header）*/
+    //noinspection GradleCompatible
+//    compile 'com.android.support:recyclerview-v7:28.0.0'
+//    compile 'com.android.support:appcompat-v7:28.0.0'
+//    compile 'com.android.support:design:28.0.0'
+    compile project(path: ':multi-image-selector')
+    implementation 'com.shuyu:GSYVideoPlayer:6.0.1'
+}
