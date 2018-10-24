@@ -19,6 +19,8 @@ package com.feiling.video.video.recorder;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.media.MediaRecorder.OnInfoListener;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.view.SurfaceHolder;
 
 import com.feiling.video.video.CLog;
@@ -39,7 +41,7 @@ public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
     private CapturePreview mVideoCapturePreview;
 
     private final CaptureConfiguration mCaptureConfiguration;
-    private final VideoFile mVideoFile;
+    private  VideoFile mVideoFile;
 
     private MediaRecorder mRecorder;
     private boolean mRecording = false;
@@ -55,6 +57,7 @@ public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
         mRecorderInterface = recorderInterface;
         mVideoFile = videoFile;
         mCameraWrapper = cameraWrapper;
+
 
         initializeCameraAndPreview(previewHolder, useFrontFacingCamera);
     }
@@ -136,8 +139,9 @@ public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
 
         CamcorderProfile baseProfile = mCameraWrapper.getBaseRecordingProfile();
         baseProfile.fileFormat = mCaptureConfiguration.getOutputFormat();
-
-        RecordingSize size = mCameraWrapper.getSupportedRecordingSize(mCaptureConfiguration.getVideoWidth(), mCaptureConfiguration.getVideoHeight());
+        // TODO: 2018/10/25 设置竖屏录制全屏视频，将 宽高 替换，原因为查询到
+//        RecordingSize size = mCameraWrapper.getSupportedRecordingSize(mCaptureConfiguration.getVideoWidth(), mCaptureConfiguration.getVideoHeight());
+        RecordingSize size = mCameraWrapper.getSupportedRecordingSize(mCaptureConfiguration.getVideoHeight(), mCaptureConfiguration.getVideoWidth());
         baseProfile.videoFrameWidth = size.width;
         baseProfile.videoFrameHeight = size.height;
         baseProfile.videoBitRate = mCaptureConfiguration.getVideoBitrate();
@@ -206,7 +210,7 @@ public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
         return mRecorder;
     }
 
-    private void releaseRecorderResources() {
+    public void releaseRecorderResources() {
         MediaRecorder recorder = getMediaRecorder();
         if (recorder != null) {
             recorder.release();
@@ -224,6 +228,9 @@ public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
         }
         releaseRecorderResources();
         CLog.d(CLog.RECORDER, "Released all resources");
+    }
+    public boolean isRelease(){
+        return mCameraWrapper == null;
     }
 
     @Override
@@ -250,4 +257,17 @@ public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
         }
     }
 
+    public void setVideoFile(VideoFile videoFile) {
+        this.mVideoFile = videoFile;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void pause() {
+        getMediaRecorder().pause();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void again() {
+        getMediaRecorder().resume();
+    }
 }

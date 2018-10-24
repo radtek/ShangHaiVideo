@@ -27,21 +27,20 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
 import android.widget.TextView;
 
 import com.feiling.video.R;
+import com.feiling.video.utils.LogUtils;
 import com.feiling.video.video.preview.CapturePreview;
 
 public class VideoCaptureView extends FrameLayout implements OnClickListener {
 
-    private ImageView mDeclineBtnIv;
-    private ImageView mAcceptBtnIv;
     private ImageView mRecordBtnIv;
     private ImageView mChangeCameraIv;
 
+    private ImageView mPauseBtnIv;
+
     private SurfaceView mSurfaceView;
-    private ImageView mThumbnailIv;
     private TextView mTimerTv;
     private Handler customHandler = new Handler();
     private long startTime = 0L;
@@ -70,16 +69,13 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
         final View videoCapture = View.inflate(context, R.layout.view_videocapture, this);
 
         mRecordBtnIv = (ImageView) videoCapture.findViewById(R.id.videocapture_recordbtn_iv);
-        mAcceptBtnIv = (ImageView) videoCapture.findViewById(R.id.videocapture_acceptbtn_iv);
-        mDeclineBtnIv = (ImageView) videoCapture.findViewById(R.id.videocapture_declinebtn_iv);
         mChangeCameraIv = (ImageView) videoCapture.findViewById(R.id.change_camera_iv);
+        mPauseBtnIv = videoCapture.findViewById(R.id.videocapture_recordbtn_pause_iv);
 
+        mPauseBtnIv.setOnClickListener(this);
         mRecordBtnIv.setOnClickListener(this);
-        mAcceptBtnIv.setOnClickListener(this);
-        mDeclineBtnIv.setOnClickListener(this);
         mChangeCameraIv.setOnClickListener(this);
 
-        mThumbnailIv = (ImageView) videoCapture.findViewById(R.id.videocapture_preview_iv);
         mSurfaceView = (SurfaceView) videoCapture.findViewById(R.id.videocapture_preview_sv);
 
         mTimerTv = (TextView) videoCapture.findViewById(R.id.videocapture_timer_tv);
@@ -107,21 +103,20 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
     }
 
     public void updateUINotRecording() {
+        startTime = 0l;
         mRecordBtnIv.setSelected(false);
         mChangeCameraIv.setVisibility(allowCameraSwitching() ? VISIBLE : INVISIBLE);
         mRecordBtnIv.setVisibility(View.VISIBLE);
-        mAcceptBtnIv.setVisibility(View.GONE);
-        mDeclineBtnIv.setVisibility(View.GONE);
-        mThumbnailIv.setVisibility(View.GONE);
         mSurfaceView.setVisibility(View.VISIBLE);
     }
 
     private Runnable updateTimerThread = new Runnable() {
         public void run() {
-            long timeInMilliseconds = SystemClock.uptimeMillis() - startTime;
-            int seconds = (int) (timeInMilliseconds / 1000);
-            int minutes = seconds / 60;
-            seconds = seconds % 60;
+            startTime++;
+            LogUtils.i(getClass().getName(),startTime + "");
+            long minutes = startTime / 60;
+            long seconds = startTime % 60;
+            LogUtils.i(getClass().getName(),minutes  + "---" + seconds);
             updateRecordingTime(seconds, minutes);
             customHandler.postDelayed(this, 1000);
         }
@@ -131,30 +126,16 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
         mRecordBtnIv.setSelected(true);
         mRecordBtnIv.setVisibility(View.VISIBLE);
         mChangeCameraIv.setVisibility(View.INVISIBLE);
-        mAcceptBtnIv.setVisibility(View.GONE);
-        mDeclineBtnIv.setVisibility(View.GONE);
-        mThumbnailIv.setVisibility(View.GONE);
         mSurfaceView.setVisibility(View.VISIBLE);
         if (mShowTimer) {
             mTimerTv.setVisibility(View.VISIBLE);
-            startTime = SystemClock.uptimeMillis();
             updateRecordingTime(0, 0);
             customHandler.postDelayed(updateTimerThread, 1000);
         }
     }
 
     public void updateUIRecordingFinished(Bitmap videoThumbnail) {
-        mRecordBtnIv.setVisibility(View.INVISIBLE);
-        mAcceptBtnIv.setVisibility(View.VISIBLE);
-        mChangeCameraIv.setVisibility(View.INVISIBLE);
-        mDeclineBtnIv.setVisibility(View.VISIBLE);
-        mThumbnailIv.setVisibility(View.VISIBLE);
-        mSurfaceView.setVisibility(View.GONE);
-
-        if (videoThumbnail != null) {
-            mThumbnailIv.setScaleType(ScaleType.CENTER_CROP);
-            mThumbnailIv.setImageBitmap(videoThumbnail);
-        }
+        updateUINotRecording();
         customHandler.removeCallbacks(updateTimerThread);
 
     }
@@ -165,15 +146,14 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
 
         if (v.getId() == mRecordBtnIv.getId()) {
             mRecordingInterface.onRecordButtonClicked();
-        } else if (v.getId() == mAcceptBtnIv.getId()) {
-            mRecordingInterface.onAcceptButtonClicked();
-        } else if (v.getId() == mDeclineBtnIv.getId()) {
-            mRecordingInterface.onDeclineButtonClicked();
         } else if (v.getId() == mChangeCameraIv.getId()) {
             isFrontCameraEnabled = !isFrontCameraEnabled;
             mChangeCameraIv.setImageResource(isFrontCameraEnabled ?
                     R.drawable.ic_change_camera_front : R.drawable.ic_change_camera_back);
             mRecordingInterface.onSwitchCamera(isFrontCameraEnabled);
+        } else if (v.getId() == mPauseBtnIv.getId()) {
+            //暂停
+            mRecordingInterface.onRecordButtonPauseOrAgain();
         }
 
     }
@@ -182,11 +162,27 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
         this.mShowTimer = showTimer;
     }
 
-    private void updateRecordingTime(int seconds, int minutes) {
+    private void updateRecordingTime(long seconds, long minutes) {
         mTimerTv.setText(String.format("%02d", minutes) + ":" + String.format("%02d", seconds));
     }
 
     private boolean allowCameraSwitching() {
         return CapturePreview.isFrontCameraAvailable() && isCameraSwitchingEnabled;
+    }
+
+    /**
+     * 暂停状态显示
+     */
+    public void updateUIRecordingPause() {
+        mPauseBtnIv.setSelected(true);
+        customHandler.removeCallbacks(updateTimerThread);
+    }
+
+    /**
+     * 继续录制
+     */
+    public void updateUIRecordingAgain() {
+        mPauseBtnIv.setSelected(false);
+        customHandler.postDelayed(updateTimerThread, 1_000);
     }
 }

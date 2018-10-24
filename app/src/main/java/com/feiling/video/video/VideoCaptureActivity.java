@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore.Video.Thumbnails;
 import android.view.Display;
@@ -58,6 +59,8 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
     private VideoCaptureView mVideoCaptureView;
     private VideoRecorder mVideoRecorder;
     private boolean isFrontFacingCameraSelected = true;
+    private boolean isVideoPause = false;
+    private CameraWrapper cameraWrapper;
 
     @Override
     public void onCreate(final Bundle savedInstanceState) {
@@ -84,10 +87,11 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
 
     private void initializeRecordingUI() {
         Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+        cameraWrapper = new CameraWrapper(new NativeCamera(), display.getRotation());
         mVideoRecorder = new VideoRecorder(this,
                 mCaptureConfiguration,
                 mVideoFile,
-                new CameraWrapper(new NativeCamera(), display.getRotation()),
+                cameraWrapper,
                 mVideoCaptureView.getPreviewSurfaceHolder(),
                 isFrontFacingCameraSelected);
         mVideoCaptureView.setRecordingButtonInterface(this);
@@ -103,13 +107,21 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
     protected void onPause() {
         if (mVideoRecorder != null) {
             mVideoRecorder.stopRecording(null);
         }
-        releaseAllResources();
+
+//        releaseAllResources();
         super.onPause();
     }
+
+
 
     @Override
     public void onBackPressed() {
@@ -127,27 +139,33 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
     }
 
     @Override
-    public void onAcceptButtonClicked() {
-        finishCompleted();
-    }
-
-    @Override
-    public void onDeclineButtonClicked() {
-        finishCancelled();
-    }
-
-    @Override
     public void onRecordingStarted() {
         mVideoCaptureView.updateUIRecordingOngoing();
     }
 
     @Override
     public void onSwitchCamera(boolean isFrontFacingSelected) {
+        releaseAllResources();
         Intent intent = new Intent(VideoCaptureActivity.this, VideoCaptureActivity.class);
         intent.putExtras(getIntent().getExtras());      //Pass all the current intent parameters
         intent.putExtra(EXTRA_FRONTFACINGCAMERASELECTED, isFrontFacingSelected);
         startActivityForResult(intent, REQUESTCODE_SWITCHCAMERA);
         overridePendingTransition(R.anim.from_middle, R.anim.to_middle);
+    }
+
+    @Override
+    public void onRecordButtonPauseOrAgain() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (isVideoPause) {
+                mVideoCaptureView.updateUIRecordingAgain();
+                mVideoRecorder.again();
+            } else {
+                mVideoCaptureView.updateUIRecordingPause();
+                mVideoRecorder.pause();
+
+            }
+            isVideoPause = !isVideoPause;
+        }
     }
 
     @Override
@@ -157,7 +175,8 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
         }
 
         mVideoCaptureView.updateUIRecordingFinished(getVideoThumbnail());
-        releaseAllResources();
+        mVideoRecorder.setVideoFile(new VideoFile(null));
+        mVideoRecorder.releaseRecorderResources();
     }
 
     @Override
@@ -170,12 +189,6 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
         finishError(message);
     }
 
-    private void finishCompleted() {
-        final Intent result = new Intent();
-        result.putExtra(EXTRA_OUTPUT_FILENAME, mVideoFile.getFullPath());
-        this.setResult(RESULT_OK, result);
-        finish();
-    }
 
     private void finishCancelled() {
         this.setResult(RESULT_CANCELED);
@@ -231,12 +244,6 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
 
     @Override
     protected void onResume() {
-        /**
-         * 设置为横屏
-         */
-//        if (getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
-//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-//        }
         super.onResume();
     }
 

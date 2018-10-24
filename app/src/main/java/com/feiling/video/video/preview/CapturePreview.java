@@ -61,7 +61,8 @@ public class CapturePreview implements SurfaceHolder.Callback {
 		}
 
 		try {
-			mCameraWrapper.configureForPreview(width, height);
+			// TODO: 2018/10/25 将宽高替换后 竖屏显示无问题.
+			mCameraWrapper.configureForPreview(height, width);
 			CLog.d(CLog.PREVIEW, "Configured camera for preview in surface of " + width + " by " + height);
 		} catch (final RuntimeException e) {
 			e.printStackTrace();

@@ -28,62 +28,47 @@
         android:layout_height="match_parent"/>
 
     <include layout="@layout/layout_recordingtime"/>
-
     <ImageView
-        android:id="@+id/videocapture_preview_iv"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"/>
+        android:src="@drawable/mis_ic_menu_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
-    <ImageView
-        android:id="@+id/videocapture_recordbtn_iv"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+    <RelativeLayout
         android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
-        android:layout_marginRight="-20dp"
-        android:background="@drawable/states_btn_capture"
-        android:clickable="true"/>
+        android:background="#51898989"
+        android:layout_width="68dp"
+        android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/change_camera_iv"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:clickable="true"
-        android:padding="8dp"
-        android:src="@drawable/ic_change_camera_front"
-        android:visibility="visible"
-        android:layout_marginRight="14dp"
-        android:layout_marginBottom="28dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="14dp"/>
+        <ImageView
+            android:id="@+id/videocapture_recordbtn_iv"
+            android:clickable="true"
+            android:padding="@dimen/margin_normal"
+            android:layout_centerInParent="true"
+            android:src="@drawable/video_action"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
-    <ImageView
-        android:id="@+id/videocapture_acceptbtn_iv"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_above="@id/videocapture_recordbtn_iv"
-        android:layout_alignParentRight="true"
-        android:layout_margin="10dp"
-        android:background="@drawable/states_btn_acceptdecline"
-        android:clickable="true"
-        android:padding="8dp"
-        android:src="@drawable/btn_accept"
-        android:visibility="gone"/>
+        <ImageView
+            android:id="@+id/videocapture_recordbtn_pause_iv"
+            android:clickable="true"
+            android:padding="@dimen/margin_normal"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/video_action_pause_again"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
-    <ImageView
-        android:id="@+id/videocapture_declinebtn_iv"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_alignParentRight="true"
-        android:layout_below="@id/videocapture_recordbtn_iv"
-        android:layout_centerVertical="true"
-        android:layout_margin="10dp"
-        android:background="@drawable/states_btn_acceptdecline"
-        android:clickable="true"
-        android:padding="8dp"
-        android:src="@drawable/btn_decline"
-        android:visibility="gone"/>
+        <ImageView
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+            android:id="@+id/change_camera_iv"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:clickable="true"
+            android:padding="8dp"
+            android:src="@drawable/ic_change_camera_front"
+            android:visibility="visible"
+          />
+    </RelativeLayout>
 </RelativeLayout>

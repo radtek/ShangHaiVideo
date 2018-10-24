@@ -14,17 +14,8 @@
   ~  See the License for the specific language governing permissions and
   ~  limitations under the License.
   -->
-
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	android:background="#ff000000" >
-
-	<ImageView
-	    android:id="@+id/videocapture_rotate_iv"
-	    android:layout_width="200dp"
-	    android:layout_height="200dp"
-	    android:layout_centerInParent="true"
-	    android:src="@drawable/img_rotate_device" />
-
-</RelativeLayout>
+<com.feiling.video.video.view.VideoCaptureView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/videocapture_videocaptureview_vcv"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />

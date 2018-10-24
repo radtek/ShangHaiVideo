@@ -135,7 +135,7 @@ public class MainActivity extends BaseActivity {
 
         final Intent intent = new Intent(this, VideoCaptureActivity.class);
         intent.putExtra(VideoCaptureActivity.EXTRA_CAPTURE_CONFIGURATION, config);
-        intent.putExtra(VideoCaptureActivity.EXTRA_OUTPUT_FILENAME, filename);
+//        intent.putExtra(VideoCaptureActivity.EXTRA_OUTPUT_FILENAME, filename);
         startActivityForResult(intent, 101);
     }
 
@@ -181,14 +181,12 @@ public class MainActivity extends BaseActivity {
     private PredefinedCaptureConfigurations.CaptureResolution getResolution(int position) {
         final PredefinedCaptureConfigurations.CaptureResolution[] resolution = new PredefinedCaptureConfigurations.CaptureResolution[]{PredefinedCaptureConfigurations.CaptureResolution.RES_1080P,
                 PredefinedCaptureConfigurations.CaptureResolution.RES_720P, PredefinedCaptureConfigurations.CaptureResolution.RES_480P};
-        return resolution[position];
+        return PredefinedCaptureConfigurations.CaptureResolution.RES_720P_P;
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         super.onActivityResult(requestCode, resultCode, data);
-        String stringExtra = data.getStringExtra(VideoCaptureActivity.EXTRA_OUTPUT_FILENAME);
-        LogUtils.i(getClass().getName(),stringExtra);
     }
 }
