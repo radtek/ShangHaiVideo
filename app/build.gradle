@@ -4,7 +4,7 @@ android {
     compileSdkVersion rootProject.ext.sdkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
     defaultConfig {
-        applicationId "com.feiling.video"
+        applicationId "nss.mobile.video"
         minSdkVersion 16
         targetSdkVersion rootProject.ext.sdkVersion
         versionCode 1

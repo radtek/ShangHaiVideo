@@ -14,7 +14,7 @@
   ~  See the License for the specific language governing permissions and
   ~  limitations under the License.
   -->
-<com.feiling.video.video.view.VideoCaptureView
+<nss.mobile.video.video.view.VideoCaptureView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/videocapture_videocaptureview_vcv"
     android:layout_width="match_parent"
