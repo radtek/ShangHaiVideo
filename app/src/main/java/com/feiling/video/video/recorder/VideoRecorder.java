@@ -140,8 +140,8 @@ public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
         CamcorderProfile baseProfile = mCameraWrapper.getBaseRecordingProfile();
         baseProfile.fileFormat = mCaptureConfiguration.getOutputFormat();
         // TODO: 2018/10/25 设置竖屏录制全屏视频，将 宽高 替换，原因为查询到
-//        RecordingSize size = mCameraWrapper.getSupportedRecordingSize(mCaptureConfiguration.getVideoWidth(), mCaptureConfiguration.getVideoHeight());
-        RecordingSize size = mCameraWrapper.getSupportedRecordingSize(mCaptureConfiguration.getVideoHeight(), mCaptureConfiguration.getVideoWidth());
+        RecordingSize size = mCameraWrapper.getSupportedRecordingSize(mCaptureConfiguration.getVideoWidth(), mCaptureConfiguration.getVideoHeight());
+//        RecordingSize size = mCameraWrapper.getSupportedRecordingSize(mCaptureConfiguration.getVideoHeight(), mCaptureConfiguration.getVideoWidth());
         baseProfile.videoFrameWidth = size.width;
         baseProfile.videoFrameHeight = size.height;
         baseProfile.videoBitRate = mCaptureConfiguration.getVideoBitrate();

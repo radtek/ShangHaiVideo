@@ -317,9 +317,12 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
     public Bundle getBundle() {
         Intent intent = getIntent();
         if (intent == null) {
-            return null;
+            return new Bundle();
         }
-        return intent.getBundleExtra("bundle");
+        if (intent.getBundleExtra("bundle") ==null) {
+            return new Bundle();
+        }
+        return intent.getBundleExtra("bundle") ;
     }
 
     @Override

@@ -16,6 +16,12 @@
         android:text="观看录像"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+    <Button
+        android:onClick="openFile"
+        android:text="打开文件目录"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
 
 
 </LinearLayout>

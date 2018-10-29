@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="140dp"
+    android:background="@color/colorWhite"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/margin_normal"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/margin_normal">
+
+    <ImageView
+        android:id="@+id/itemFileVideo_iv"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:src="@drawable/pay_zhifubao_logo" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/margin_normal"
+        android:layout_toRightOf="@+id/itemFileVideo_iv"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/itemFileVideo_fileName_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="xxxxx" />
+
+        <TextView
+            android:id="@+id/itemFileVideo_createDate_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2018-10-10 10:20:33" />
+
+        <TextView
+            android:id="@+id/itemFileVideo_videoDum_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="120分钟" />
+
+        <TextView
+            android:id="@+id/itemFileVideo_fileSize_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="120M" />
+
+        <TextView
+            android:id="@+id/itemFileVideo_uploadStatus_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="未上传" />
+
+        <TextView
+            android:id="@+id/itemFileVideo_code_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="校验码" />
+    </LinearLayout>
+</RelativeLayout>

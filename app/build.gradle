@@ -96,4 +96,7 @@ dependencies {
 //    compile 'com.android.support:design:28.0.0'
     compile project(path: ':multi-image-selector')
     implementation 'com.shuyu:GSYVideoPlayer:6.0.1'
+
+    implementation 'org.litepal.android:java:3.0.0'
+
 }

@@ -18,7 +18,6 @@ package com.feiling.video.video;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
 import android.os.Build;
@@ -30,6 +29,7 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.feiling.video.R;
+import com.feiling.video.utils.preferences.SettingPreferences;
 import com.feiling.video.video.camera.CameraWrapper;
 import com.feiling.video.video.camera.NativeCamera;
 import com.feiling.video.video.configuration.CaptureConfiguration;
@@ -38,6 +38,8 @@ import com.feiling.video.video.recorder.VideoRecorder;
 import com.feiling.video.video.recorder.VideoRecorderInterface;
 import com.feiling.video.video.view.RecordingButtonInterface;
 import com.feiling.video.video.view.VideoCaptureView;
+
+import org.greenrobot.eventbus.Subscribe;
 
 public class VideoCaptureActivity extends Activity implements RecordingButtonInterface, VideoRecorderInterface {
 
@@ -62,6 +64,7 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
     private boolean isVideoPause = false;
     private CameraWrapper cameraWrapper;
 
+
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,11 +81,21 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
         initializeRecordingUI();
     }
 
+    @Subscribe()
+    public void setVideoInfo(int i) {
+        if (i == 1) {
+            mVideoCaptureView.showTimer(mCaptureConfiguration.getShowTimer());
+            long autoPlayLong = SettingPreferences.getAutoPlayLong();
+            mVideoCaptureView.setAutoVideoTime(autoPlayLong);
+        }
+    }
+
     private void initializeCaptureConfiguration(final Bundle savedInstanceState) {
         mCaptureConfiguration = generateCaptureConfiguration();
         mVideoRecorded = generateVideoRecorded(savedInstanceState);
         mVideoFile = generateOutputFile(savedInstanceState);
-        isFrontFacingCameraSelected = generateIsFrontFacingCameraSelected();
+//        isFrontFacingCameraSelected = generateIsFrontFacingCameraSelected();
+        isFrontFacingCameraSelected = true;
     }
 
     private void initializeRecordingUI() {
@@ -103,12 +116,16 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
         } else {
             mVideoCaptureView.updateUINotRecording();
         }
-        mVideoCaptureView.showTimer(mCaptureConfiguration.getShowTimer());
+        setVideoInfo(1);
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        if (SettingPreferences.isAuto()) {
+            mVideoCaptureView.startAutoVideo();
+        }
     }
 
     @Override
@@ -116,11 +133,12 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
         if (mVideoRecorder != null) {
             mVideoRecorder.stopRecording(null);
         }
-
+        if (!SettingPreferences.isAuto()) {
+            mVideoCaptureView.closeAutoVideo();
+        }
 //        releaseAllResources();
         super.onPause();
     }
-
 
 
     @Override

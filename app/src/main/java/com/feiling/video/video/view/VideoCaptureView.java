@@ -40,6 +40,8 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
 
     private ImageView mPauseBtnIv;
 
+    private TextView mAutoTimeTv;
+
     private SurfaceView mSurfaceView;
     private TextView mTimerTv;
     private Handler customHandler = new Handler();
@@ -49,6 +51,24 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
     private boolean mShowTimer;
     private boolean isFrontCameraEnabled;
     private boolean isCameraSwitchingEnabled;
+    private boolean isOpenAutoVideo = false;
+    private long autoVideoTime = 10;//自动播放时间
+    private long autoMax = 10;
+    private Runnable mAutoVideoRunnable = new Runnable() {
+        @Override
+        public void run() {
+
+            mAutoTimeTv.setText(String.valueOf(autoVideoTime));
+            if (autoVideoTime <= 0) {
+                //开启自动播放
+                mRecordingInterface.onRecordButtonClicked();
+                customHandler.removeCallbacks(this);
+                return;
+            }
+            customHandler.postDelayed(this, 1_000);
+            autoVideoTime--;
+        }
+    };
 
     public VideoCaptureView(Context context) {
         super(context);
@@ -75,6 +95,8 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
         mPauseBtnIv.setOnClickListener(this);
         mRecordBtnIv.setOnClickListener(this);
         mChangeCameraIv.setOnClickListener(this);
+
+        mAutoTimeTv = videoCapture.findViewById(R.id.videocapture_auto_time_tv);
 
         mSurfaceView = (SurfaceView) videoCapture.findViewById(R.id.videocapture_preview_sv);
 
@@ -104,19 +126,25 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
 
     public void updateUINotRecording() {
         startTime = 0l;
+        mPauseBtnIv.setVisibility(GONE);
         mRecordBtnIv.setSelected(false);
         mChangeCameraIv.setVisibility(allowCameraSwitching() ? VISIBLE : INVISIBLE);
         mRecordBtnIv.setVisibility(View.VISIBLE);
         mSurfaceView.setVisibility(View.VISIBLE);
+        if (isOpenAutoVideo) {
+            autoVideoTime = autoMax;
+            mAutoTimeTv.setVisibility(VISIBLE);
+            customHandler.post(mAutoVideoRunnable);
+        }else {
+            mAutoTimeTv.setVisibility(View.GONE);
+        }
     }
 
     private Runnable updateTimerThread = new Runnable() {
         public void run() {
             startTime++;
-            LogUtils.i(getClass().getName(),startTime + "");
             long minutes = startTime / 60;
             long seconds = startTime % 60;
-            LogUtils.i(getClass().getName(),minutes  + "---" + seconds);
             updateRecordingTime(seconds, minutes);
             customHandler.postDelayed(this, 1000);
         }
@@ -124,6 +152,7 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
 
     public void updateUIRecordingOngoing() {
         mRecordBtnIv.setSelected(true);
+        mPauseBtnIv.setVisibility(View.VISIBLE);
         mRecordBtnIv.setVisibility(View.VISIBLE);
         mChangeCameraIv.setVisibility(View.INVISIBLE);
         mSurfaceView.setVisibility(View.VISIBLE);
@@ -132,12 +161,16 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
             updateRecordingTime(0, 0);
             customHandler.postDelayed(updateTimerThread, 1000);
         }
+        if (isOpenAutoVideo) {
+            mAutoTimeTv.setVisibility(View.GONE);
+            customHandler.removeCallbacks(mAutoVideoRunnable);
+        }
+
     }
 
     public void updateUIRecordingFinished(Bitmap videoThumbnail) {
         updateUINotRecording();
         customHandler.removeCallbacks(updateTimerThread);
-
     }
 
     @Override
@@ -168,6 +201,26 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
 
     private boolean allowCameraSwitching() {
         return CapturePreview.isFrontCameraAvailable() && isCameraSwitchingEnabled;
+    }
+
+    public void setAutoVideoTime(long autoVideoTime) {
+        this.autoMax = autoVideoTime;
+        this.autoVideoTime = autoMax;
+
+    }
+
+
+    public void startAutoVideo() {
+        isOpenAutoVideo = true;
+        customHandler.post(mAutoVideoRunnable);
+        mAutoTimeTv.setVisibility(View.VISIBLE);
+    }
+
+    public void closeAutoVideo() {
+        isOpenAutoVideo = false;
+        customHandler.removeCallbacks(mAutoVideoRunnable);
+        mAutoTimeTv.setVisibility(View.GONE);
+
     }
 
     /**

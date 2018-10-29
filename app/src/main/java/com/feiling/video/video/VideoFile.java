@@ -26,8 +26,8 @@ import java.util.Locale;
 public class VideoFile {
 
 	private static final String DIRECTORY_SEPARATOR	= "/";
-	private static final String DATE_FORMAT			= "yyyyMMdd_HHmmss";
-	private static final String DEFAULT_PREFIX		= "video_";
+	private static final String DATE_FORMAT			= "yyyyMMddHHmmss";
+	private static final String DEFAULT_PREFIX		= "ID_";
 	private static final String DEFAULT_EXTENSION	= ".mp4";
 
 	private final String mFilename;
@@ -69,6 +69,9 @@ public class VideoFile {
 		return true;
 	}
 
+	public static File baseFile(){
+		return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+	}
 	private Date getDate() {
 		if (mDate == null) {
 			mDate = new Date();

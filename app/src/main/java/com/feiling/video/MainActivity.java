@@ -15,6 +15,7 @@ import android.view.View;
 
 import com.feiling.video.base.BaseActivity;
 import com.feiling.video.base.BindLayout;
+import com.feiling.video.ui.FileListActivity;
 import com.feiling.video.ui.VideoPlayActivity;
 import com.feiling.video.utils.LogUtils;
 import com.feiling.video.video.VideoCaptureActivity;
@@ -144,30 +145,7 @@ public class MainActivity extends BaseActivity {
         final PredefinedCaptureConfigurations.CaptureQuality quality = getQuality(1);
 
         CaptureConfiguration.Builder builder = new CaptureConfiguration.Builder(resolution, quality);
-        //maxDurationSecs为录制的最长时间，单位为秒。
-        // maxFilesizeMb为录制的最大大小，单位为M。
-        // showTimer为是否显示录制计时器。
-        // allowFrontFacingCamera为是否允许前置摄像头切换。
-//        try {
-//            int maxDuration = Integer.valueOf(maxDurationEt.getEditableText().toString());
-//            builder.maxDuration(maxDuration);
-//        } catch (final Exception e) {
-//            //NOP
-//        }
-//        try {
-//            int maxFileSize = Integer.valueOf(maxFilesizeEt.getEditableText().toString());
-//            builder.maxFileSize(maxFileSize);
-//        } catch (final Exception e) {
-//            //NOP
-//        }
-//        try {
-//            int fps = Integer.valueOf(fpsEt.getEditableText().toString());
-//            builder.frameRate(fps);
-//        } catch (final Exception e) {
-//            //NOP
-//        }
         builder.showRecordingTime();
-//        builder.noCameraToggle();
 
         return builder.build();
     }
@@ -188,5 +166,9 @@ public class MainActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public void openFile(View view) {
+        startActivity(FileListActivity.class);
     }
 }

@@ -28,6 +28,10 @@ public class ActivityUtils {
         System.exit(0);
     }
 
+    public static BaseActivity top(){
+        return queue.get(0);
+    }
+
     public static void singleAty(BaseActivity aty) {
         for (BaseActivity baseActivity : queue) {
             if (baseActivity.equals(aty)) {
