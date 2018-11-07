@@ -7,62 +7,81 @@
     android:orientation="vertical"
     tools:context=".ui.SettingActivity">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="wrap_content">
 
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/colorWhite"
-            android:orientation="horizontal"
-            android:paddingBottom="@dimen/margin_normal"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin"
-            android:paddingTop="@dimen/margin_normal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:text="是否自动播放" />
-
-            <Switch
-                android:id="@+id/setting_isAuto_switch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true" />
-        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:background="@color/colorWhite"
-            android:orientation="horizontal"
-            android:paddingBottom="@dimen/margin_normal"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin"
-            android:paddingTop="@dimen/margin_normal">
+            android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:text="自动播放时间" />
 
-            <EditText
-                android:id="@+id/setting_auto_time_et"
-                android:paddingTop="6dp"
-                android:paddingBottom="6dp"
-                android:gravity="right"
-                android:maxLength="6"
-                android:inputType="number"
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@null" />
+                android:background="@color/colorWhite"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/margin_normal"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingTop="@dimen/margin_normal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="是否自动录像" />
+
+                <Switch
+                    android:id="@+id/setting_isAuto_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true" />
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:background="@color/colorWhite"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/margin_normal"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingTop="@dimen/margin_normal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="自动录像时间" />
+
+                <EditText
+                    android:id="@+id/setting_auto_time_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:gravity="right"
+                    android:inputType="number"
+                    android:maxLength="6"
+                    android:paddingBottom="6dp"
+                    android:paddingTop="6dp" />
+            </LinearLayout>
+            <TextView
+                android:id="@+id/setting_save_tv"
+                android:layout_gravity="right"
+                android:gravity="center"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:text="保存"
+                android:layout_marginTop="@dimen/margin_normal"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                style="@style/btnNormalRadius"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content" />
         </LinearLayout>
-    </LinearLayout>
+    </ScrollView>
 </ScrollView>
