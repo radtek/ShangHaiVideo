@@ -146,7 +146,13 @@ public class CameraWrapper {
             return (mNativeCamera.getCameraOrientation() - displayRotation + 360) % 360;
         }
     }
-
+    public int getRotationCorrectionF() {
+        if (mNativeCamera.isFrontFacingCamera()) {
+            return 270;
+        } else {
+            return 90;
+        }
+    }
     @TargetApi(VERSION_CODES.HONEYCOMB)
     protected List<Size> getSupportedVideoSizes(int currentSdkInt) {
         Parameters params = mNativeCamera.getNativeCameraParameters();

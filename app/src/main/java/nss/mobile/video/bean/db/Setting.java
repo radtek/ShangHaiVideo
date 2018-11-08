@@ -1,6 +1,5 @@
 package nss.mobile.video.bean.db;
 
-import org.litepal.crud.LitePalSupport;
 
 /**
  * 描述：
@@ -9,7 +8,7 @@ import org.litepal.crud.LitePalSupport;
  *
  * @author ql
  */
-public class Setting extends LitePalSupport {
+public class Setting {
     private String autoPlayLong;//自动播放时间
     private Boolean isAutoPlay;//是否开启自动播放
 

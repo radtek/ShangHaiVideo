@@ -24,4 +24,13 @@ public interface RecordingButtonInterface {
     void onSwitchCamera(boolean isFrontFacingSelected);
 
     void onRecordButtonPauseOrAgain();
+
+    /**
+     * 点击查看全部 menu
+     */
+    void onAllMenuButtonClick();
+
+    void onScanningWifiButtonClick();
+
+    void onQualityButtonClick();
 }

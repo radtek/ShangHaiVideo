@@ -33,6 +33,7 @@ import nss.mobile.video.video.configuration.CaptureConfiguration;
 import nss.mobile.video.video.preview.CapturePreview;
 import nss.mobile.video.video.preview.CapturePreviewInterface;
 
+import java.io.File;
 import java.io.IOException;
 
 public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
@@ -40,12 +41,13 @@ public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
     private CameraWrapper mCameraWrapper;
     private CapturePreview mVideoCapturePreview;
 
-    private final CaptureConfiguration mCaptureConfiguration;
+    private  CaptureConfiguration mCaptureConfiguration;
     private  VideoFile mVideoFile;
 
     private MediaRecorder mRecorder;
     private boolean mRecording = false;
     private final VideoRecorderInterface mRecorderInterface;
+    private File nowSaveFile;//当前存储地址
 
     public VideoRecorder(VideoRecorderInterface recorderInterface,
                          CaptureConfiguration captureConfiguration,
@@ -151,10 +153,12 @@ public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
 
         recorder.setProfile(baseProfile);
         recorder.setMaxDuration(mCaptureConfiguration.getMaxCaptureDuration());
-        recorder.setOutputFile(mVideoFile.getFullPath());
-        recorder.setOrientationHint(mCameraWrapper.getRotationCorrection());
+         nowSaveFile = mVideoFile.getFile();
+        recorder.setOutputFile(nowSaveFile);
+        int rotationCorrection = mCameraWrapper.getRotationCorrection();
+//        int rotationCorrection = mCameraWrapper.getRotationCorrectionF();
+        recorder.setOrientationHint(rotationCorrection);
         recorder.setVideoFrameRate(mCaptureConfiguration.getVideoFPS());
-
         try {
             recorder.setMaxFileSize(mCaptureConfiguration.getMaxCaptureFileSize());
         } catch (IllegalArgumentException e) {
@@ -257,6 +261,18 @@ public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
         }
     }
 
+    public CaptureConfiguration getCaptureConfiguration() {
+        return mCaptureConfiguration;
+    }
+
+
+    public void setVideoCapturePreview(CapturePreview videoCapturePreview) {
+        this.mVideoCapturePreview = videoCapturePreview;
+    }
+
+    public File getNowSaveFile(){
+        return nowSaveFile;
+    }
     public void setVideoFile(VideoFile videoFile) {
         this.mVideoFile = videoFile;
     }

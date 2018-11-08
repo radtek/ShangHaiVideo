@@ -1,5 +1,6 @@
 package nss.mobile.video.event;
 
+import nss.mobile.video.bean.MemoryBean;
 import nss.mobile.video.utils.FileMeoryUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -26,7 +27,7 @@ public class FileMemoryEvent extends EventBus {
     }
 
 
-    public void postMemoryEvent(Long l) {
+    public void postMemoryEvent(MemoryBean l) {
         post(l);
     }
 }

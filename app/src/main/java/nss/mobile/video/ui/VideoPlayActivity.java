@@ -1,22 +1,36 @@
 package nss.mobile.video.ui;
 
 import android.content.pm.ActivityInfo;
+import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
 
 import nss.mobile.video.R;
 import nss.mobile.video.base.BaseActivity;
 import nss.mobile.video.base.BindLayout;
+
 import com.shuyu.gsyvideoplayer.GSYVideoManager;
 import com.shuyu.gsyvideoplayer.utils.OrientationUtils;
 import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer;
 
-@BindLayout(layoutRes = R.layout.activity_video_play,bindTopBar = false)
+@BindLayout(layoutRes = R.layout.activity_video_play, bindTopBar = false)
 public class VideoPlayActivity extends BaseActivity {
+    public static final String VIDEO_PATH = "videoPath";
     StandardGSYVideoPlayer videoPlayer;
 
     OrientationUtils orientationUtils;
 
+    public static void put(String path, Bundle bundle) {
+        bundle.putString(VIDEO_PATH, path);
+    }
+
+    @Override
+    public void init(Bundle savedInstanceState) {
+        super.init(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+    }
 
     @Override
     public void initWidget() {
@@ -25,11 +39,11 @@ public class VideoPlayActivity extends BaseActivity {
     }
 
     private void init() {
-        videoPlayer =  (StandardGSYVideoPlayer)findViewById(R.id.video_player);
+        videoPlayer = (StandardGSYVideoPlayer) findViewById(R.id.video_player);
 
 //        String source1 = "http://9890.vod.myqcloud.com/9890_4e292f9a3dd011e6b4078980237cc3d3.f20.mp4";
 //        String source1 = "/data/user/0/nss.mobile.video/files1539877066111.mp4";
-        String source1 = "/data/user/0/nss.mobile.video/files/1539877303015.mp4";
+        String source1 = getBundle().getString(VIDEO_PATH);
         videoPlayer.setUp(source1, true, "测试视频");
         //增加封面
         ImageView imageView = new ImageView(this);

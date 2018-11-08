@@ -7,7 +7,6 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -93,7 +92,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         ActivityUtils.addAty(this);
         createView();
         BindViewUtils.find(this);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+//        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         initBar();
 
@@ -320,10 +319,10 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         if (intent == null) {
             return new Bundle();
         }
-        if (intent.getBundleExtra("bundle") ==null) {
+        if (intent.getBundleExtra("bundle") == null) {
             return new Bundle();
         }
-        return intent.getBundleExtra("bundle") ;
+        return intent.getBundleExtra("bundle");
     }
 
     @Override
@@ -438,10 +437,11 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         switch (requestCode) {
             case REQUEST_CODE_DECODE:
                 if (resultCode != Activity.RESULT_OK) {
+                    onResultCode(null, false);
                     return;
                 }
                 String resultContent = CaptureActivity.getResultContent(data);
-                onResultCode(resultContent);
+                onResultCode(resultContent, true);
                 break;
             case REQUEST_IMAGE:
                 if (resultCode != Activity.RESULT_OK) {
@@ -467,7 +467,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         }
     }
 
-    public void onResultCode(String resultContent) {
+    public void onResultCode(String resultContent, boolean b) {
     }
 
 

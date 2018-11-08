@@ -1,12 +1,13 @@
 package nss.mobile.video;
 
+import android.support.multidex.MultiDexApplication;
 import android.util.DisplayMetrics;
 
-import org.litepal.LitePalApplication;
+import com.qiniu.pili.droid.streaming.StreamingEnv;
 
+import nss.mobile.video.bean.MemoryBean;
 import nss.mobile.video.event.FileMemoryEvent;
 import nss.mobile.video.utils.FileMeoryUtils;
-import nss.mobile.video.utils.LogUtils;
 
 
 /**
@@ -14,7 +15,7 @@ import nss.mobile.video.utils.LogUtils;
  * http://www.wanandroid.com/blog/show/2080
  * Created by mrqiu on 2017/10/15.
  */
-public class MyApp extends LitePalApplication {
+public class MyApp extends MultiDexApplication {
     private static MyApp instance;
     private static boolean backCamera;
     private CaseFileMemorySizeThread caseFileMemorySizeThread = new CaseFileMemorySizeThread();
@@ -28,6 +29,7 @@ public class MyApp extends LitePalApplication {
     public void onCreate() {
         super.onCreate();
         instance = this;
+        StreamingEnv.init(getApplicationContext());
 
         //OkHttpInfo.initOkHttpCard(this);
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
@@ -55,16 +57,15 @@ public class MyApp extends LitePalApplication {
     }
 
     public static class CaseFileMemorySizeThread implements Runnable {
+        private MemoryBean memoryBean = new MemoryBean();
 
         @Override
         public void run() {
             long availableInternalMemorySize = FileMeoryUtils.getAvailableInternalMemorySize();
             long totalInternalMemorySize = FileMeoryUtils.getTotalInternalMemorySize();
-            long l = availableInternalMemorySize * 100 / totalInternalMemorySize;
-            if (l <= 50) {
-                FileMemoryEvent.getInstance().postMemoryEvent(l);
-            }
-            LogUtils.i(getClass().getName(), "剩余空间--->" + l);
+            memoryBean.setAvailableInternalMemorySize(availableInternalMemorySize);
+            memoryBean.setTotalInternalMemorySize(totalInternalMemorySize);
+            FileMemoryEvent.getInstance().postMemoryEvent(memoryBean);
             C.sHandler.postDelayed(this, 1_000);
         }
     }

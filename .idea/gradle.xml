@@ -11,6 +11,7 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/bindview" />
             <option value="$PROJECT_DIR$/http" />
+            <option value="$PROJECT_DIR$/livertmppush" />
             <option value="$PROJECT_DIR$/multi-image-selector" />
             <option value="$PROJECT_DIR$/qmui" />
           </set>

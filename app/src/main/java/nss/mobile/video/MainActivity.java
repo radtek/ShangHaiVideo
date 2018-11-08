@@ -6,12 +6,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
+import android.view.WindowManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,14 +22,14 @@ import nss.mobile.video.base.BaseActivity;
 import nss.mobile.video.base.BindLayout;
 import nss.mobile.video.ui.FileListActivity;
 import nss.mobile.video.ui.VideoPlayActivity;
+import nss.mobile.video.ui.wifi.WifiManagerActivity;
 import nss.mobile.video.video.VideoCaptureActivity;
 import nss.mobile.video.video.configuration.CaptureConfiguration;
 import nss.mobile.video.video.configuration.PredefinedCaptureConfigurations;
 
 
-@BindLayout(layoutRes = R.layout.activity_main)
+@BindLayout(layoutRes = R.layout.activity_main,bindTopBar = false)
 public class MainActivity extends BaseActivity {
-    public static final int REQUEST_CODE_ASK_CAMERA = 123;
 
     //申请两个权限，录音和文件读写
     //1、首先声明一个数组permissions，将需要的权限都放在里面
@@ -42,6 +44,8 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         initPermission();
     }
 
@@ -64,6 +68,8 @@ public class MainActivity extends BaseActivity {
             ActivityCompat.requestPermissions(this, permissions, mRequestCode);
         }else{
             //说明权限都已经通过，可以做你想做的事情去
+            openVideo(null);
+            finish();
         }
     }
 
@@ -88,7 +94,8 @@ public class MainActivity extends BaseActivity {
                 showPermissionDialog();//跳转到系统设置权限页面，或者直接关闭页面，不让他继续访问
             }else{
                 //全部权限通过，可以进行下一步操作。。。
-
+                openVideo(null);
+                finish();
             }
         }
 
@@ -112,6 +119,7 @@ public class MainActivity extends BaseActivity {
                         public void onClick(DialogInterface dialog, int which) {
                             //关闭页面或者做其他操作
                             cancelPermissionDialog();
+                            finish();
 
                         }
                     })
@@ -125,17 +133,13 @@ public class MainActivity extends BaseActivity {
         mPermissionDialog.cancel();
     }
 
-    public void seeVideo(View v){
-        startActivity(VideoPlayActivity.class);
-    }
 
     public void openVideo(View v) {
+        // TODO: 2018/11/4
         final CaptureConfiguration config = createCaptureConfiguration();
-        final String filename = getFilesDir().getAbsolutePath()+"/"+System.currentTimeMillis() +".mp4";
 
         final Intent intent = new Intent(this, VideoCaptureActivity.class);
         intent.putExtra(VideoCaptureActivity.EXTRA_CAPTURE_CONFIGURATION, config);
-//        intent.putExtra(VideoCaptureActivity.EXTRA_OUTPUT_FILENAME, filename);
         startActivityForResult(intent, 101);
     }
 
@@ -149,16 +153,22 @@ public class MainActivity extends BaseActivity {
         return builder.build();
     }
 
+    /**
+     * 品质
+     * @param position
+     * @return
+     */
     private PredefinedCaptureConfigurations.CaptureQuality getQuality(int position) {
         final PredefinedCaptureConfigurations.CaptureQuality[] quality = new PredefinedCaptureConfigurations.CaptureQuality[]{PredefinedCaptureConfigurations.CaptureQuality.HIGH, PredefinedCaptureConfigurations.CaptureQuality.MEDIUM,
                 PredefinedCaptureConfigurations.CaptureQuality.LOW};
         return quality[position];
     }
 
+    //分辨率
     private PredefinedCaptureConfigurations.CaptureResolution getResolution(int position) {
         final PredefinedCaptureConfigurations.CaptureResolution[] resolution = new PredefinedCaptureConfigurations.CaptureResolution[]{PredefinedCaptureConfigurations.CaptureResolution.RES_1080P,
                 PredefinedCaptureConfigurations.CaptureResolution.RES_720P, PredefinedCaptureConfigurations.CaptureResolution.RES_480P};
-        return PredefinedCaptureConfigurations.CaptureResolution.RES_720P_P;
+        return resolution[position];
     }
 
     @Override
@@ -167,7 +177,4 @@ public class MainActivity extends BaseActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    public void openFile(View view) {
-        startActivity(FileListActivity.class);
-    }
 }

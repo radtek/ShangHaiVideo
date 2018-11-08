@@ -110,4 +110,9 @@
     <color name="color_red">#ff3833</color>
     <color name="color_red_1">#e7332f</color>
     <color name="color_blue">#2e79e7</color>
+
+
+    <color name="pldroid_streaming_white">#fff</color>
+    <color name="pldroid_streaming_red">#f00</color>
+    <color name="pldroid_streaming_yellow">#FFFF00</color>
 </resources>

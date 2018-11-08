@@ -18,7 +18,7 @@ public class SettingPreferences {
     public static final String IS_AUTO = "isAuto";
 
     public static void saveAutoPlayLong(long l) {
-        PreferencesUtils.saveLong(MyApp.getContext(), AUTO_PLAY_LONG, l);
+        PreferencesUtils.saveLong(MyApp.getInstance().getApplicationContext(), AUTO_PLAY_LONG, l);
     }
 
     public static long getAutoPlayLong() {

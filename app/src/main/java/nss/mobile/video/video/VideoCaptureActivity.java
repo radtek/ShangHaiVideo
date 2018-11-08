@@ -16,7 +16,6 @@
 
 package nss.mobile.video.video;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
@@ -24,11 +23,25 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore.Video.Thumbnails;
 import android.view.Display;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.io.File;
+
+import nss.mobile.video.MyApp;
 import nss.mobile.video.R;
+import nss.mobile.video.base.BaseActivity;
+import nss.mobile.video.base.BindLayout;
+import nss.mobile.video.base.bind.BindView;
+import nss.mobile.video.bean.MemoryBean;
+import nss.mobile.video.event.FileMemoryEvent;
+import nss.mobile.video.ui.AllFunctionActivity;
+import nss.mobile.video.ui.wifi.WifiManagerActivity;
+import nss.mobile.video.utils.UnitHelper;
+import nss.mobile.video.utils.preferences.QualityPreferences;
 import nss.mobile.video.utils.preferences.SettingPreferences;
 import nss.mobile.video.video.camera.CameraWrapper;
 import nss.mobile.video.video.camera.NativeCamera;
@@ -39,12 +52,11 @@ import nss.mobile.video.video.recorder.VideoRecorderInterface;
 import nss.mobile.video.video.view.RecordingButtonInterface;
 import nss.mobile.video.video.view.VideoCaptureView;
 
-import org.greenrobot.eventbus.Subscribe;
-
-public class VideoCaptureActivity extends Activity implements RecordingButtonInterface, VideoRecorderInterface {
+@BindLayout(layoutRes = R.layout.activity_videocapture, bindTopBar = false)
+public class VideoCaptureActivity extends BaseActivity implements RecordingButtonInterface, VideoRecorderInterface {
 
     public static final int RESULT_ERROR = 753245;
-    private static final int REQUESTCODE_SWITCHCAMERA = 578465;
+    private static final int REQUESTCODE_SWITCHCAMERA = 222;
 
     public static final String EXTRA_OUTPUT_FILENAME = "com.jmolsmobile.extraoutputfilename";
     public static final String EXTRA_CAPTURE_CONFIGURATION = "com.jmolsmobile.extracaptureconfiguration";
@@ -54,33 +66,42 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
     private static final String SAVED_RECORDED_BOOLEAN = "com.jmolsmobile.savedrecordedboolean";
     protected static final String SAVED_OUTPUT_FILENAME = "com.jmolsmobile.savedoutputfilename";
 
+    @BindView(R.id.videocapture_videocaptureview_vcv)
+    VideoCaptureView mVideoCaptureView;
+
     private boolean mVideoRecorded = false;
     VideoFile mVideoFile = null;
     private CaptureConfiguration mCaptureConfiguration;
 
-    private VideoCaptureView mVideoCaptureView;
+
     private VideoRecorder mVideoRecorder;
     private boolean isFrontFacingCameraSelected = true;
     private boolean isVideoPause = false;
     private CameraWrapper cameraWrapper;
 
+    private boolean isRestart;
 
     @Override
-    public void onCreate(final Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void init(Bundle savedInstanceState) {
+        super.init(savedInstanceState);
         CLog.toggleLogging(this);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.activity_videocapture);
 
         initializeCaptureConfiguration(savedInstanceState);
-
-        mVideoCaptureView = (VideoCaptureView) findViewById(R.id.videocapture_videocaptureview_vcv);
-        if (mVideoCaptureView == null) return; // Wrong orientation
-
-        initializeRecordingUI();
     }
 
+    @Override
+    public void initWidget() {
+        super.initWidget();
+        initializeRecordingUI();
+        FileMemoryEvent.getInstance().register(this);
+    }
+
+    /**
+     * 更改摄像头配置
+     *
+     * @param i
+     */
     @Subscribe()
     public void setVideoInfo(int i) {
         if (i == 1) {
@@ -94,8 +115,7 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
         mCaptureConfiguration = generateCaptureConfiguration();
         mVideoRecorded = generateVideoRecorded(savedInstanceState);
         mVideoFile = generateOutputFile(savedInstanceState);
-//        isFrontFacingCameraSelected = generateIsFrontFacingCameraSelected();
-        isFrontFacingCameraSelected = true;
+        isFrontFacingCameraSelected = generateIsFrontFacingCameraSelected();
     }
 
     private void initializeRecordingUI() {
@@ -110,7 +130,7 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
         mVideoCaptureView.setRecordingButtonInterface(this);
         mVideoCaptureView.setCameraSwitchingEnabled(mCaptureConfiguration.getAllowFrontFacingCamera());
         mVideoCaptureView.setCameraFacing(isFrontFacingCameraSelected);
-
+        mVideoCaptureView.setIsShowFileSize(true);
         if (mVideoRecorded) {
             mVideoCaptureView.updateUIRecordingFinished(getVideoThumbnail());
         } else {
@@ -123,9 +143,18 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
     @Override
     protected void onStart() {
         super.onStart();
+        if (isRestart) {
+            Intent intent = new Intent(VideoCaptureActivity.this, VideoCaptureActivity.class);
+            intent.putExtras(getIntent().getExtras());      //Pass all the current intent parameters
+            intent.putExtra(EXTRA_FRONTFACINGCAMERASELECTED, isFrontFacingCameraSelected);
+            startActivityForResult(intent, REQUESTCODE_SWITCHCAMERA);
+            overridePendingTransition(R.anim.from_middle, R.anim.to_middle);
+            return;
+        }
         if (SettingPreferences.isAuto()) {
             mVideoCaptureView.startAutoVideo();
         }
+
     }
 
     @Override
@@ -133,8 +162,8 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
         if (mVideoRecorder != null) {
             mVideoRecorder.stopRecording(null);
         }
-
-//        releaseAllResources();
+        isRestart = true;
+        releaseAllResources();
         super.onPause();
     }
 
@@ -155,6 +184,7 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
 
     @Override
     public void onRecordingStarted() {
+        MyApp.getInstance().startCaseFileMemoryThread();
         mVideoCaptureView.updateUIRecordingOngoing();
     }
 
@@ -184,11 +214,31 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
     }
 
     @Override
+    public void onAllMenuButtonClick() {
+        Intent intent = new Intent(this, AllFunctionActivity.class);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onScanningWifiButtonClick() {
+        startActivity(WifiManagerActivity.class);
+    }
+
+    @Override
+    public void onQualityButtonClick() {
+        Bundle bundle = new Bundle();
+        QualitySelectActivity.put(mCaptureConfiguration, bundle);
+        startActivity(QualitySelectActivity.class, bundle);
+    }
+
+
+
+    @Override
     public void onRecordingStopped(String message) {
         if (message != null) {
             Toast.makeText(this, message, Toast.LENGTH_LONG).show();
         }
-
+        MyApp.getInstance().stopCaseFileMemoryThread();
         mVideoCaptureView.updateUIRecordingFinished(getVideoThumbnail());
         mVideoRecorder.setVideoFile(new VideoFile(null));
         mVideoRecorder.releaseRecorderResources();
@@ -233,11 +283,7 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
     }
 
     protected CaptureConfiguration generateCaptureConfiguration() {
-        CaptureConfiguration returnConfiguration = this.getIntent().getParcelableExtra(EXTRA_CAPTURE_CONFIGURATION);
-        if (returnConfiguration == null) {
-            returnConfiguration = CaptureConfiguration.getDefault();
-            CLog.d(CLog.ACTIVITY, "No captureconfiguration passed - using default configuration");
-        }
+        CaptureConfiguration returnConfiguration = QualityPreferences.getConfiguration();
         return returnConfiguration;
     }
 
@@ -279,6 +325,30 @@ public class VideoCaptureActivity extends Activity implements RecordingButtonInt
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         this.setResult(resultCode, data);
         finish();
+    }
+
+    /**
+     * 内存变化
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void fileMemoryChannge(MemoryBean allMemoery) {
+        String fileSize = null;
+        File nowSaveFile = mVideoRecorder.getNowSaveFile();
+        if (nowSaveFile != null) {
+            long length = nowSaveFile.length();
+            fileSize = UnitHelper.formatterFileSize(length);
+        } else {
+            fileSize = "0";
+        }
+        String allSize = UnitHelper.formatterFileSize(allMemoery.getAvailableInternalMemorySize());
+        mVideoCaptureView.setFileAndAllSize(fileSize, allSize);
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        FileMemoryEvent.getInstance().unregister(this);
     }
 
     @Override

@@ -31,12 +31,12 @@ public class CaptureConfiguration implements Parcelable {
     public static final int NO_DURATION_LIMIT = -1;
     public static final int NO_FILESIZE_LIMIT = -1;
 
-    private int videoWidth = PredefinedCaptureConfigurations.WIDTH_720P;
-    private int videoHeight = PredefinedCaptureConfigurations.HEIGHT_720P;
-    private int bitrate = PredefinedCaptureConfigurations.BITRATE_HQ_720P;
+    private int videoWidth = PredefinedCaptureConfigurations.WIDTH_1080P;
+    private int videoHeight = PredefinedCaptureConfigurations.HEIGHT_1080P;
+    private int bitrate = PredefinedCaptureConfigurations.BITRATE_HQ_1080P;
     private int maxDurationMs = NO_DURATION_LIMIT;
     private int maxFilesizeBytes = NO_FILESIZE_LIMIT;
-    private boolean showTimer = false;
+    private boolean showTimer = true;
     private boolean allowFrontFacingCamera = true;
     private int videoFramerate = PredefinedCaptureConfigurations.FPS_30;     //Default FPS is 30.
 
@@ -45,6 +45,9 @@ public class CaptureConfiguration implements Parcelable {
     private int AUDIO_ENCODER = MediaRecorder.AudioEncoder.AAC;
     private int VIDEO_SOURCE = MediaRecorder.VideoSource.CAMERA;
     private int VIDEO_ENCODER = MediaRecorder.VideoEncoder.H264;
+
+    private CaptureResolution resolution;
+    private CaptureQuality quality;
 
     public static CaptureConfiguration getDefault() {
         return new CaptureConfiguration();
@@ -56,6 +59,8 @@ public class CaptureConfiguration implements Parcelable {
 
     @Deprecated
     public CaptureConfiguration(CaptureResolution resolution, CaptureQuality quality) {
+        this.resolution = resolution;
+        this.quality = quality;
         videoWidth = resolution.width;
         videoHeight = resolution.height;
         bitrate = resolution.getBitrate(quality);
@@ -175,60 +180,6 @@ public class CaptureConfiguration implements Parcelable {
         return VIDEO_ENCODER;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(videoWidth);
-        dest.writeInt(videoHeight);
-        dest.writeInt(bitrate);
-        dest.writeInt(maxDurationMs);
-        dest.writeInt(maxFilesizeBytes);
-        dest.writeInt(videoFramerate);
-        dest.writeByte((byte) (showTimer ? 1 : 0));
-        dest.writeByte((byte) (allowFrontFacingCamera ? 1 : 0));
-
-        dest.writeInt(OUTPUT_FORMAT);
-        dest.writeInt(AUDIO_SOURCE);
-        dest.writeInt(AUDIO_ENCODER);
-        dest.writeInt(VIDEO_SOURCE);
-        dest.writeInt(VIDEO_ENCODER);
-    }
-
-    public static final Parcelable.Creator<CaptureConfiguration> CREATOR = new Parcelable.Creator<CaptureConfiguration>() {
-        @Override
-        public CaptureConfiguration createFromParcel(
-                Parcel in) {
-            return new CaptureConfiguration(in);
-        }
-
-        @Override
-        public CaptureConfiguration[] newArray(
-                int size) {
-            return new CaptureConfiguration[size];
-        }
-    };
-
-    private CaptureConfiguration(Parcel in) {
-        videoWidth = in.readInt();
-        videoHeight = in.readInt();
-        bitrate = in.readInt();
-        maxDurationMs = in.readInt();
-        maxFilesizeBytes = in.readInt();
-        videoFramerate = in.readInt();
-        showTimer = in.readByte() != 0;
-        allowFrontFacingCamera = in.readByte() != 0;
-
-        OUTPUT_FORMAT = in.readInt();
-        AUDIO_SOURCE = in.readInt();
-        AUDIO_ENCODER = in.readInt();
-        VIDEO_SOURCE = in.readInt();
-        VIDEO_ENCODER = in.readInt();
-    }
-
     public int getVideoFPS() {
         return videoFramerate;
     }
@@ -239,6 +190,8 @@ public class CaptureConfiguration implements Parcelable {
 
         public Builder(CaptureResolution resolution, CaptureQuality quality) {
             configuration = new CaptureConfiguration();
+            configuration.setQuality(quality);
+            configuration.setResolution(resolution);
             configuration.videoWidth = resolution.width;
             configuration.videoHeight = resolution.height;
             configuration.bitrate = resolution.getBitrate(quality);
@@ -280,4 +233,77 @@ public class CaptureConfiguration implements Parcelable {
             return this;
         }
     }
+
+
+    public CaptureResolution getResolution() {
+        return resolution;
+    }
+
+    public void setResolution(CaptureResolution resolution) {
+        this.resolution = resolution;
+    }
+
+    public CaptureQuality getQuality() {
+        return quality;
+    }
+
+    public void setQuality(CaptureQuality quality) {
+        this.quality = quality;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(this.videoWidth);
+        dest.writeInt(this.videoHeight);
+        dest.writeInt(this.bitrate);
+        dest.writeInt(this.maxDurationMs);
+        dest.writeInt(this.maxFilesizeBytes);
+        dest.writeByte(this.showTimer ? (byte) 1 : (byte) 0);
+        dest.writeByte(this.allowFrontFacingCamera ? (byte) 1 : (byte) 0);
+        dest.writeInt(this.videoFramerate);
+        dest.writeInt(this.OUTPUT_FORMAT);
+        dest.writeInt(this.AUDIO_SOURCE);
+        dest.writeInt(this.AUDIO_ENCODER);
+        dest.writeInt(this.VIDEO_SOURCE);
+        dest.writeInt(this.VIDEO_ENCODER);
+        dest.writeInt(this.resolution == null ? -1 : this.resolution.ordinal());
+        dest.writeInt(this.quality == null ? -1 : this.quality.ordinal());
+    }
+
+    protected CaptureConfiguration(Parcel in) {
+        this.videoWidth = in.readInt();
+        this.videoHeight = in.readInt();
+        this.bitrate = in.readInt();
+        this.maxDurationMs = in.readInt();
+        this.maxFilesizeBytes = in.readInt();
+        this.showTimer = in.readByte() != 0;
+        this.allowFrontFacingCamera = in.readByte() != 0;
+        this.videoFramerate = in.readInt();
+        this.OUTPUT_FORMAT = in.readInt();
+        this.AUDIO_SOURCE = in.readInt();
+        this.AUDIO_ENCODER = in.readInt();
+        this.VIDEO_SOURCE = in.readInt();
+        this.VIDEO_ENCODER = in.readInt();
+        int tmpResolution = in.readInt();
+        this.resolution = tmpResolution == -1 ? null : CaptureResolution.values()[tmpResolution];
+        int tmpQuality = in.readInt();
+        this.quality = tmpQuality == -1 ? null : CaptureQuality.values()[tmpQuality];
+    }
+
+    public static final Creator<CaptureConfiguration> CREATOR = new Creator<CaptureConfiguration>() {
+        @Override
+        public CaptureConfiguration createFromParcel(Parcel source) {
+            return new CaptureConfiguration(source);
+        }
+
+        @Override
+        public CaptureConfiguration[] newArray(int size) {
+            return new CaptureConfiguration[size];
+        }
+    };
 }

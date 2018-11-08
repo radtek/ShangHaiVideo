@@ -9,7 +9,11 @@ android {
         targetSdkVersion rootProject.ext.sdkVersion
         versionCode 1
         versionName "1.0.0"
+        multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters "armeabi", "armeabi-v7a", "x86", "mips"
+        }
     }
     buildTypes {
         release {
@@ -20,6 +24,8 @@ android {
 
     compileOptions {
         incremental false
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
@@ -36,7 +42,55 @@ android {
         exclude 'META-INF/androidx.cursoradapter_cursoradapter.version'
         exclude 'META-INF/androidx.drawerlayout_drawerlayout.version'
 
+
+        exclude 'META-INF/maven/org.bytedeco.javacpp-presets/opencv/pom.properties'
+        exclude 'META-INF/maven/org.bytedeco.javacpp-presets/opencv/pom.xml'
+        exclude 'META-INF/maven/org.bytedeco.javacpp-presets/ffmpeg/pom.properties'
+        exclude 'META-INF/maven/org.bytedeco.javacpp-presets/ffmpeg/pom.xml'
+
+        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-locale-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86/concrt140.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-utility-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-math-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-locale-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/linux-x86_64/libgomp.so.1'
+        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-stdio-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-convert-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/macosx-x86_64/libusb-1.0.0.dylib'
+        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-time-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/linux-x86/libgomp.so.1'
+        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-math-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-environment-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-multibyte-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-runtime-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86_64/msvcp140.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-stdio-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-string-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86_64/vcruntime140.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-multibyte-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-filesystem-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-time-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86/msvcp140.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-environment-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86_64/concrt140.dll'
+        pickFirst 'org/bytedeco/javacpp/api-ms-win-crt-heap-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-heap-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-heap-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86/vcruntime140.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-convert-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-string-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-runtime-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-filesystem-l1-1-0.dll'
+        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-utility-l1-1-0.dll'
+
     }
+    sourceSets {
+        main {
+            jni.srcDirs = []
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+
 }
 
 allprojects {
@@ -58,9 +112,6 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-
-
-
     compile project(':http')
     compile project(':qmui')
     //解决lib添加 数量过的导致无法打包
@@ -75,28 +126,11 @@ dependencies {
     compile 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.30'
     compile 'com.google.code.gson:gson:2.8.1'
     compile 'com.google.zxing:core:3.3.0'
-    compile 'com.contrarywind:Android-PickerView:4.1.0'
-    //https://github.com/anzaizai/EasySwipeMenuLayout item 条目滑动删除
-//    compile 'com.github.anzaizai:EasySwipeMenuLayout:1.1.2'
-    //    compile project(':multi-image-selector')
-    compile 'com.youth.banner:banner:1.4.4'
     compile 'com.orhanobut:logger:2.2.0'
     compile 'com.github.bumptech.glide:glide:3.5.2'
-    //https://github.com/liaoinstan/SpringView
-    //compile 'com.liaoinstan.springview:library:1.5.0'
-    //other Headers/Footers, choose one or more that you like
-    /*compile 'com.liaoinstan.springview:AcfunHeader:1.5.0'         //AcFun style （header and footer）
-        compile 'com.liaoinstan.springview:AliHeader:1.5.0'           //alitrip style （header and footer）
-        compile 'com.liaoinstan.springview:MeituanHeader:1.5.0'       //meituan style （header and footer）
-        compile 'com.liaoinstan.springview:RotationHeader:1.5.0'      //mechanical gear style （header and footer）
-        compile 'com.liaoinstan.springview:WeixinHeader:1.5.0'        //weichat Mini Program header（only header）*/
-    //noinspection GradleCompatible
-//    compile 'com.android.support:recyclerview-v7:28.0.0'
-//    compile 'com.android.support:appcompat-v7:28.0.0'
-//    compile 'com.android.support:design:28.0.0'
     compile project(path: ':multi-image-selector')
     implementation 'com.shuyu:GSYVideoPlayer:6.0.1'
-
-    implementation 'org.litepal.android:java:3.0.0'
-
+    compile 'com.qiniu:happy-dns:0.2.8'
+    compile 'com.qiniu.pili:pili-android-qos:0.8.+'
+    implementation files('libs/pldroid-media-streaming-2.3.0.jar')
 }

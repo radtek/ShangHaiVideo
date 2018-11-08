@@ -25,6 +25,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -41,6 +42,14 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
     private ImageView mPauseBtnIv;
 
     private TextView mAutoTimeTv;
+
+    private ViewGroup mSizeGroup;
+    private TextView mFileSizeTv;
+    private TextView mAllSizeTv;
+
+    private ImageView mAllMenuIv;
+    private ImageView mWifiIv;
+    private ImageView mQualityIv;//图片质量选择
 
     private SurfaceView mSurfaceView;
     private TextView mTimerTv;
@@ -61,8 +70,8 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
                 customHandler.removeCallbacks(this);
                 return;
             }
-            LogUtils.i(getClass().getName(),"自动播放还在运行");
-            mAutoTimeTv.setText(String.valueOf(autoVideoTime));
+            LogUtils.i(getClass().getName(), "自动播放还在运行");
+            mAutoTimeTv.setText(String.format("%d s", autoVideoTime));
             if (autoVideoTime <= 0) {
                 //开启自动播放
                 mRecordingInterface.onRecordButtonClicked();
@@ -73,6 +82,7 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
             autoVideoTime--;
         }
     };
+    private boolean isShowFileSize;
 
     public VideoCaptureView(Context context) {
         super(context);
@@ -95,10 +105,20 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
         mRecordBtnIv = (ImageView) videoCapture.findViewById(R.id.videocapture_recordbtn_iv);
         mChangeCameraIv = (ImageView) videoCapture.findViewById(R.id.change_camera_iv);
         mPauseBtnIv = videoCapture.findViewById(R.id.videocapture_recordbtn_pause_iv);
+        mQualityIv = videoCapture.findViewById(R.id.videocapture_quality_iv);
+        mAllMenuIv = videoCapture.findViewById(R.id.videocapture_allMenu_iv);
+        mWifiIv = videoCapture.findViewById(R.id.videocapture_wifi_iv);
 
+        mQualityIv.setOnClickListener(this);
+        mAllMenuIv.setOnClickListener(this);
+        mWifiIv.setOnClickListener(this);
         mPauseBtnIv.setOnClickListener(this);
         mRecordBtnIv.setOnClickListener(this);
         mChangeCameraIv.setOnClickListener(this);
+
+        mSizeGroup = videoCapture.findViewById(R.id.videocapture_size_group);
+        mAllSizeTv = videoCapture.findViewById(R.id.videocapture_allSize_tv);
+        mFileSizeTv = videoCapture.findViewById(R.id.videocapture_fileSize_tv);
 
         mAutoTimeTv = videoCapture.findViewById(R.id.videocapture_auto_time_tv);
 
@@ -131,6 +151,8 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
     public void updateUINotRecording() {
         startTime = 0l;
         mPauseBtnIv.setVisibility(GONE);
+        mQualityIv.setVisibility(VISIBLE);
+        mTimerTv.setVisibility(GONE);
         mRecordBtnIv.setSelected(false);
         mChangeCameraIv.setVisibility(allowCameraSwitching() ? VISIBLE : INVISIBLE);
         mRecordBtnIv.setVisibility(View.VISIBLE);
@@ -139,9 +161,13 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
             autoVideoTime = autoMax;
             mAutoTimeTv.setVisibility(VISIBLE);
             customHandler.post(mAutoVideoRunnable);
-        }else {
+        } else {
             mAutoTimeTv.setVisibility(View.GONE);
         }
+        mWifiIv.setVisibility(View.VISIBLE);
+        mSizeGroup.setVisibility(View.GONE);
+        mAllMenuIv.setVisibility(View.VISIBLE);
+
     }
 
     private Runnable updateTimerThread = new Runnable() {
@@ -156,10 +182,16 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
 
     public void updateUIRecordingOngoing() {
         mRecordBtnIv.setSelected(true);
+        mAllMenuIv.setVisibility(View.GONE);
+
         mPauseBtnIv.setVisibility(View.VISIBLE);
         mRecordBtnIv.setVisibility(View.VISIBLE);
         mChangeCameraIv.setVisibility(View.INVISIBLE);
         mSurfaceView.setVisibility(View.VISIBLE);
+
+        mQualityIv.setVisibility(View.GONE);
+        mWifiIv.setVisibility(View.GONE);
+
         if (mShowTimer) {
             mTimerTv.setVisibility(View.VISIBLE);
             updateRecordingTime(0, 0);
@@ -170,10 +202,14 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
             customHandler.removeCallbacks(mAutoVideoRunnable);
         }
 
+        if (isShowFileSize) {
+            mSizeGroup.setVisibility(View.VISIBLE);
+        }
     }
 
     public void updateUIRecordingFinished(Bitmap videoThumbnail) {
         updateUINotRecording();
+
         customHandler.removeCallbacks(updateTimerThread);
     }
 
@@ -191,6 +227,12 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
         } else if (v.getId() == mPauseBtnIv.getId()) {
             //暂停
             mRecordingInterface.onRecordButtonPauseOrAgain();
+        } else if (v.getId() == mAllMenuIv.getId()) {
+            mRecordingInterface.onAllMenuButtonClick();
+        } else if (v.getId() == mWifiIv.getId()) {
+            mRecordingInterface.onScanningWifiButtonClick();
+        } else if (v.getId() == mQualityIv.getId()) {
+            mRecordingInterface.onQualityButtonClick();
         }
 
     }
@@ -225,6 +267,15 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
         customHandler.removeCallbacks(mAutoVideoRunnable);
         mAutoTimeTv.setVisibility(View.GONE);
 
+    }
+
+    public void setIsShowFileSize(boolean isShow) {
+        this.isShowFileSize = isShow;
+    }
+
+    public void setFileAndAllSize(CharSequence fileSize, CharSequence allSize) {
+        mAllSizeTv.setText(allSize);
+        mFileSizeTv.setText(fileSize);
     }
 
     /**
