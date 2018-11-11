@@ -65,7 +65,7 @@ public class AllFunctionActivity extends BaseActivity implements BaseQuickAdapte
                 break;
             case 2:
 
-                startActivity(SimLiveVideActivity.class);
+                startActivity(SimLiveVideoActivity.class);
                 break;
         }
     }

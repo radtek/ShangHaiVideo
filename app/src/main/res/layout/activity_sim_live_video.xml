@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.SimLiveVideoActivity">
+
+    <com.qiniu.pili.droid.streaming.widget.AspectFrameLayout
+        android:id="@+id/cameraPreview_afl"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true">
+
+        <nss.mobile.video.ui.widget.CameraPreviewFrameView
+            android:id="@+id/cameraPreview_surfaceView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center" />
+
+    </com.qiniu.pili.droid.streaming.widget.AspectFrameLayout>
+
+    <TextView
+        android:id="@+id/live_video_hint_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:text="视频直播中"
+        android:textColor="@color/text_red_color"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/live_video_camera_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:background="@drawable/s_bg_div"
+        android:clickable="true"
+        android:padding="@dimen/margin_normal"
+        android:text="摄像头切换"
+        android:textColor="@color/text_white_color" />
+
+
+    <TextView
+        android:id="@+id/live_video_open_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:background="@drawable/s_bg_div"
+        android:clickable="true"
+        android:padding="@dimen/margin_normal"
+        android:text="停止/开始"
+        android:textColor="@color/text_white_color" />
+
+</RelativeLayout>

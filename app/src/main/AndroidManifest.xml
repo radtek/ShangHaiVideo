@@ -62,17 +62,37 @@
         <activity
             android:name=".video.VideoCaptureActivity"
             android:screenOrientation="landscape" />
-        <activity android:name=".ui.VideoPlayActivity" />
-        <activity android:name=".ui.SettingActivity" />
-        <activity android:name=".ui.FileListActivity" />
-        <activity android:name=".ui.AllFunctionActivity" />
-        <activity android:name=".ui.wifi.WifiManagerActivity" />
-        <activity android:name=".video.QualitySelectActivity" />
         <activity
-            android:name=".ui.LiveVideoActivity"
+            android:name=".ui.VideoPlayActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize" />
+        <activity
+            android:name=".ui.SettingActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize" />
+        <activity
+            android:name=".ui.FileListActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize" />
+        <activity
+            android:name=".ui.AllFunctionActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize" />
+        <activity
+            android:name=".ui.wifi.WifiManagerActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize" />
+        <activity
+            android:name=".video.QualitySelectActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize" />
+        <activity
+            android:name=".ui.SimLiveVideoActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="landscape" />
-        <activity android:name=".qiniu.activity.ImportStreamingActivity" />
-        <activity android:name=".ui.SimLiveVideActivity"></activity>
+
+        <service
+            android:name=".UploadService"
+            android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name=".service.UploadFileService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

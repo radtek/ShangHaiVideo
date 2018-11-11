@@ -20,6 +20,9 @@ import com.bumptech.glide.Glide;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
+import com.zhy.http.okhttp.OkHttpUtils;
+import com.zhy.http.okhttp.callback.Callback;
+import com.zhy.http.okhttp.callback.FileCallBack;
 
 import nss.mobile.video.R;
 
@@ -40,6 +43,8 @@ import nss.mobile.video.utils.LogUtils;
 import nss.mobile.video.utils.UnitHelper;
 import nss.mobile.video.utils.div.DividerItemDecoration;
 import nss.mobile.video.video.VideoFile;
+import okhttp3.Call;
+import okhttp3.Response;
 
 @BindLayout(layoutRes = R.layout.activity_file_list, title = "视文件")
 public class FileListActivity extends BaseActivity implements BaseQuickAdapter.OnItemClickListener {
@@ -208,65 +213,28 @@ public class FileListActivity extends BaseActivity implements BaseQuickAdapter.O
         nullGroup.setVisibility(i);
     }
 
-    public static class FileReaderThread implements Runnable {
-
-        @Override
-        public void run() {
-            List<FileBean> fileBeans = new ArrayList<>();
-            File file = VideoFile.baseFile();
-            File[] files = file.listFiles();
-            if (files == null) {
-                return;
+    private void uploadFile() {
+        OkHttpUtils.post().build().execute(new Callback() {
+            @Override
+            public Object parseNetworkResponse(Response response, int id) throws Exception {
+                return null;
             }
-            for (File f : files) {
-                if (!f.isFile()) {
-                    continue;
-                }
-                if (!f.getName().endsWith(".mp4")) {
-                    continue;
-                }
-                MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
-                LogUtils.i(getClass().getName(), f.getAbsolutePath());
-                try {
-                    mediaMetadataRetriever.setDataSource(f.getAbsolutePath());
-                } catch (RuntimeException e) {
-                    e.printStackTrace();
-                    continue;
-                }
-                Bitmap videoThumbnail = ThumbnailUtils.createVideoThumbnail(f.getAbsolutePath(), 0);
-                LogUtils.i(getClass().getName(), f.getName());
-                String[] split = f.getName().split("\\.");
 
-                String path = file.getAbsolutePath() + "/" + split[0] + ".jpg";
-                File imgFile = new File(path);
-                if (!imgFile.exists()) {
-                    try {
-                        imgFile.createNewFile();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                //创建时间
-                String startDate = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE);
-                //播放时长
-                String playLong = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-                mediaMetadataRetriever.release();
-                FileBean fb = new FileBean();
-                fb.setFileName(f.getName());
-                fb.setStartTime(startDate);
-                long time = Long.parseLong(playLong);
-                time = time / 1000;
-                long miao = time % 60;
-                long fen = time / 60;
-                fb.setPlayTime(fen + "分" + miao + "秒");
-                long l = f.length() / 1024;
-                fb.setFileSize(l / 1024 + "M" + l % 1024 + "KB");
-                fb.setUpStatus("");
-                fb.setCode("");
-                fileBeans.add(fb);
+            @Override
+            public void inProgress(float progress, long total, int id) {
+                super.inProgress(progress, total, id);
             }
-            EventBus.getDefault().post(fileBeans);
-        }
+
+            @Override
+            public void onError(Call call, Exception e, int id) {
+
+            }
+
+            @Override
+            public void onResponse(Object response, int id, int code) {
+
+            }
+        });
     }
 
 
