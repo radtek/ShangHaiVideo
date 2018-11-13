@@ -1,10 +1,12 @@
 package nss.mobile.video.ui;
 
-import android.graphics.Bitmap;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Color;
-import android.media.MediaMetadataRetriever;
-import android.media.ThumbnailUtils;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -20,13 +22,10 @@ import com.bumptech.glide.Glide;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
-import com.zhy.http.okhttp.OkHttpUtils;
-import com.zhy.http.okhttp.callback.Callback;
-import com.zhy.http.okhttp.callback.FileCallBack;
-
-import nss.mobile.video.R;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,19 +34,25 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import nss.mobile.video.R;
+import nss.mobile.video.UploadService;
 import nss.mobile.video.base.BaseActivity;
 import nss.mobile.video.base.BindLayout;
 import nss.mobile.video.base.bind.BindView;
+import nss.mobile.video.bean.db.UploadFile;
+import nss.mobile.video.event.FileUploadChangeEvent;
+import nss.mobile.video.service.IFileUploadListener;
+import nss.mobile.video.service.IFtpCallback;
+import nss.mobile.video.service.UpFile;
+import nss.mobile.video.service.UploadFileService;
 import nss.mobile.video.ui.adapter.QLViewHolder;
 import nss.mobile.video.utils.LogUtils;
 import nss.mobile.video.utils.UnitHelper;
 import nss.mobile.video.utils.div.DividerItemDecoration;
 import nss.mobile.video.video.VideoFile;
-import okhttp3.Call;
-import okhttp3.Response;
 
 @BindLayout(layoutRes = R.layout.activity_file_list, title = "视文件")
-public class FileListActivity extends BaseActivity implements BaseQuickAdapter.OnItemClickListener {
+public class FileListActivity extends BaseActivity implements BaseQuickAdapter.OnItemClickListener, ServiceConnection, IFileUploadListener, IFtpCallback {
 
     @BindView(R.id.file_list_rv)
     RecyclerView rv;
@@ -59,6 +64,11 @@ public class FileListActivity extends BaseActivity implements BaseQuickAdapter.O
     ViewGroup nullGroup;
     @BindView(R.id.file_list_upload_tv)
     TextView uploadTv;
+    @BindView(R.id.file_list_hint_tv)
+    TextView hintTv;
+    @BindView(R.id.file_list_error_hint_group)
+    ViewGroup errorHintGroup;
+
     private boolean isSetting = false;
     private BaseQuickAdapter<FileBean, QLViewHolder> adapter = new BaseQuickAdapter<FileBean, QLViewHolder>(R.layout.item_file_video) {
         @Override
@@ -70,7 +80,7 @@ public class FileListActivity extends BaseActivity implements BaseQuickAdapter.O
                         .into(view1);
             }
 
-            view1.setTag(R.id.top_bar_right_btn, item.filePath);
+            view1.setTag(R.id.top_bar_right_btn, item.getFilePath());
             helper.setText(R.id.itemFileVideo_code_tv, item.getCode())
                     .setText(R.id.itemFileVideo_createDate_tv, item.getStartTime() + "")
                     .setText(R.id.itemFileVideo_fileName_tv, item.getFileName())
@@ -89,10 +99,19 @@ public class FileListActivity extends BaseActivity implements BaseQuickAdapter.O
     };
     private Button topbarOption;
     private List<FileBean> data;
+    private UploadFileService.FileUploadBinder fileUploadBinder;
+
 
     @Override
     public void initData() {
         super.initData();
+        Intent intent = new Intent(this, UploadFileService.class);
+        bindService(intent, this, BIND_AUTO_CREATE);
+    }
+
+    private void restartService() {
+        Intent intent = new Intent(this, UploadFileService.class);
+        startService(intent);
     }
 
     @Override
@@ -100,6 +119,8 @@ public class FileListActivity extends BaseActivity implements BaseQuickAdapter.O
         super.initWidget();
         uploadTv.setOnClickListener(this);
         deleteBtn.setOnClickListener(this);
+        errorHintGroup.setOnClickListener(this);
+
         rv.setLayoutManager(new LinearLayoutManager(this));
         rv.addItemDecoration(new DividerItemDecoration(this, LinearLayout.VERTICAL, 10, Color.GRAY));
         rv.setAdapter(adapter);
@@ -109,6 +130,9 @@ public class FileListActivity extends BaseActivity implements BaseQuickAdapter.O
         adapter.setOnItemClickListener(this);
         topbarOption = mTopBar.addRightTextButton("操作", R.id.top_bar_right_btn);
         topbarOption.setOnClickListener(this);
+        mTopBar.addRightTextButton("查看上传", R.id.top_bar_right_look_uploading).setOnClickListener(this);
+
+        FileUploadChangeEvent.getInstance().register(this);
     }
 
     @NonNull
@@ -123,6 +147,7 @@ public class FileListActivity extends BaseActivity implements BaseQuickAdapter.O
             long l1 = file1.lastModified();
             f.setStartTime(s.format(new Date(l1)));
             f.setFilePath(file1.getAbsolutePath());
+            f.setUpStatus("未知");
             f.setFileSize(UnitHelper.formatterFileSize(file1.length()));
             l.add(f);
         }
@@ -132,15 +157,58 @@ public class FileListActivity extends BaseActivity implements BaseQuickAdapter.O
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        unbindService(this);
         EventBus.getDefault().unregister(this);
+        FileUploadChangeEvent.getInstance().unregister(this);
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void fileStatusChange(Integer i) {
+        checkFiles();
+    }
+
+
+    private void checkFiles() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (FileBean datum : data) {
+                    boolean isServiceHas = false;
+                    try {
+                        isServiceHas = fileUploadBinder.isServiceHasFile(new File(datum.getFilePath()));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    if (isServiceHas) {
+                        datum.setUpStatus("已上传");
+                        continue;
+                    }
+                    UploadFile uploadFile = UploadFile.selectByFilePath(datum.getFilePath());
+                    if (uploadFile != null && UploadFile.UPLOAD_READY.equals(uploadFile.getStatus())) {
+                        datum.setUpStatus("正在上传");
+                        continue;
+                    }
+
+                    datum.setUpStatus("未上传");
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter.setNewData(data);
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        }).start();
+
+
+    }
 
     @Override
     public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
         if (isSetting) {
             FileBean fileBean = data.get(position);
-            fileBean.select = !fileBean.select;
+            fileBean.setSelect(!fileBean.isSelect());
             adapter.notifyDataSetChanged();
             return;
         }
@@ -155,8 +223,18 @@ public class FileListActivity extends BaseActivity implements BaseQuickAdapter.O
     public void forbidClick(View v) {
         super.forbidClick(v);
         switch (v.getId()) {
+            case R.id.file_list_error_hint_group:
+                restartService();
+                break;
             case R.id.file_list_upload_tv://上传视频;
-                toast("测试--->上传视频中");
+                for (FileBean datum : data) {
+                    if (datum.isSelect()) {
+                        UpFile upFile = new UpFile();
+                        upFile.setFile(new File(datum.getFilePath()));
+                        fileUploadBinder.addUploadFile(upFile);
+                    }
+                }
+                checkFiles();
                 return;
             case R.id.top_bar_right_btn:
                 if (isSetting) {
@@ -166,7 +244,7 @@ public class FileListActivity extends BaseActivity implements BaseQuickAdapter.O
                     adapter.notifyDataSetChanged();
                     List<FileBean> data = adapter.getData();
                     for (FileBean datum : data) {
-                        datum.select = false;
+                        datum.setSelect(false);
                     }
                     optionGroup.setVisibility(View.GONE);
                     return;
@@ -187,7 +265,7 @@ public class FileListActivity extends BaseActivity implements BaseQuickAdapter.O
                                 List<FileBean> data = adapter.getData();
                                 for (FileBean datum : data) {
                                     if (datum.isSelect()) {
-                                        File file = new File(datum.filePath);
+                                        File file = new File(datum.getFilePath());
                                         file.delete();
                                     }
                                 }
@@ -202,6 +280,9 @@ public class FileListActivity extends BaseActivity implements BaseQuickAdapter.O
                         }).show();
 
                 break;
+            case R.id.top_bar_right_look_uploading:
+                startActivity(FileUploadingActivity.class);
+                break;
         }
     }
 
@@ -212,116 +293,71 @@ public class FileListActivity extends BaseActivity implements BaseQuickAdapter.O
         int i = data.size() == 0 ? View.VISIBLE : View.GONE;
         nullGroup.setVisibility(i);
     }
+    /****************************************/
+    /****************启动文件服务*****************/
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        fileUploadBinder = (UploadFileService.FileUploadBinder) service;
+        fileUploadBinder.addFileUploadListener(this);
+        fileUploadBinder.addFtpCallback(this);
 
-    private void uploadFile() {
-        OkHttpUtils.post().build().execute(new Callback() {
-            @Override
-            public Object parseNetworkResponse(Response response, int id) throws Exception {
-                return null;
-            }
+        if (!fileUploadBinder.isFtpConnect()) {
+            errorHintGroup.setVisibility(View.VISIBLE);
+            hintTv.setText("启动ftp服务中");
+            restartService();
+            return;
+        }
+        errorHintGroup.setVisibility(View.GONE);
+        checkFiles();
 
-            @Override
-            public void inProgress(float progress, long total, int id) {
-                super.inProgress(progress, total, id);
-            }
-
-            @Override
-            public void onError(Call call, Exception e, int id) {
-
-            }
-
-            @Override
-            public void onResponse(Object response, int id, int code) {
-
-            }
-        });
     }
 
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
 
-    public static class FileBean {
-        //单元内容:预览图、⽂文件名、开始时间、时⻓长、⽂文件⼤大⼩小、上传状态、校验码;
-        private String icon;
-        private String fileName;
-        private String startTime;
-        private String playTime;
-        private String fileSize;
-        private String upStatus;
-        private String code;
-        private String filePath;
-        private boolean select;
-
-        public void setFilePath(String filePath) {
-            this.filePath = filePath;
-        }
-
-        public String getIcon() {
-            return icon;
-        }
-
-        public void setIcon(String icon) {
-            this.icon = icon;
-        }
-
-        public String getFileName() {
-            return fileName;
-        }
-
-        public void setFileName(String fileName) {
-            this.fileName = fileName;
-        }
-
-        public String getStartTime() {
-            return startTime;
-        }
-
-        public void setStartTime(String startTime) {
-            this.startTime = startTime;
-        }
-
-        public String getPlayTime() {
-            return playTime;
-        }
-
-        public void setPlayTime(String playTime) {
-            this.playTime = playTime;
-        }
-
-        public String getFileSize() {
-            return fileSize;
-        }
-
-        public void setFileSize(String fileSize) {
-            this.fileSize = fileSize;
-        }
-
-        public String getUpStatus() {
-            if (TextUtils.isEmpty(upStatus)) {
-                return "未上传";
-            }
-            return upStatus;
-        }
-
-        public void setUpStatus(String upStatus) {
-            this.upStatus = upStatus;
-        }
-
-        public String getCode() {
-            if (TextUtils.isEmpty(code)) {
-                return "校验码";
-            }
-            return code;
-        }
-
-        public void setCode(String code) {
-            this.code = code;
-        }
-
-        public String filePath() {
-            return filePath;
-        }
-
-        public boolean isSelect() {
-            return select;
-        }
     }
+
+    /****************************************/
+    /****************文件长传回调Start******************/
+    @Override
+    public void uploadFileStart(File lastFile) {
+
+    }
+
+    @Override
+    public void uploadFileError(File lastFile, Exception e) {
+
+    }
+
+    @Override
+    public void uploadFileSuccess(File lastFile) {
+        checkFiles();
+    }
+
+    @Override
+    public void uploadingFile(float progress, long total, File lastFile) {
+        LogUtils.i(getClass().getName(), progress + "----" + total + "---" + lastFile.getAbsolutePath());
+    }
+
+    /***************文件上传回调end*************/
+    /****************************************/
+
+    @Override
+    public void ftpFailed(String error) {
+        errorHintGroup.setVisibility(View.VISIBLE);
+        hintTv.setText(error);
+    }
+
+    @Override
+    public void ftpConnectSuccess() {
+        errorHintGroup.setVisibility(View.GONE);
+        checkFiles();
+    }
+
+    @Override
+    public void ftpLoginFailed(String msg) {
+        errorHintGroup.setVisibility(View.VISIBLE);
+        hintTv.setText(msg);
+    }
+
 }

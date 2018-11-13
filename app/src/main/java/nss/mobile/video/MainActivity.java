@@ -1,7 +1,9 @@
 package nss.mobile.video;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -12,10 +14,13 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.telephony.TelephonyManager;
 import android.view.View;
 import android.view.WindowManager;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import nss.mobile.video.base.BaseActivity;
@@ -24,23 +29,26 @@ import nss.mobile.video.ui.FileListActivity;
 import nss.mobile.video.ui.VideoPlayActivity;
 import nss.mobile.video.ui.wifi.WifiManagerActivity;
 import nss.mobile.video.video.VideoCaptureActivity;
+import nss.mobile.video.video.VideoFile;
 import nss.mobile.video.video.configuration.CaptureConfiguration;
 import nss.mobile.video.video.configuration.PredefinedCaptureConfigurations;
 
 
-@BindLayout(layoutRes = R.layout.activity_main,bindTopBar = false)
+@BindLayout(layoutRes = R.layout.activity_main, bindTopBar = false)
 public class MainActivity extends BaseActivity {
 
     //申请两个权限，录音和文件读写
     //1、首先声明一个数组permissions，将需要的权限都放在里面
     String[] permissions = new String[]{Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE};
+            Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
     //2、创建一个mPermissionList，逐个判断哪些权限未授予，未授予的权限存储到mPerrrmissionList中
     List<String> mPermissionList = new ArrayList<>();
     /**
      * 不再提示权限时的展示对话框
      */
     AlertDialog mPermissionDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +59,7 @@ public class MainActivity extends BaseActivity {
 
 
     private final int mRequestCode = 100;//权限请求码
+
     //权限判断和申请
     private void initPermission() {
 
@@ -66,7 +75,9 @@ public class MainActivity extends BaseActivity {
         //申请权限
         if (mPermissionList.size() > 0) {//有权限没有通过，需要申请
             ActivityCompat.requestPermissions(this, permissions, mRequestCode);
-        }else{
+        } else {
+
+
             //说明权限都已经通过，可以做你想做的事情去
             openVideo(null);
             finish();
@@ -92,7 +103,7 @@ public class MainActivity extends BaseActivity {
             //如果有权限没有被允许
             if (hasPermissionDismiss) {
                 showPermissionDialog();//跳转到系统设置权限页面，或者直接关闭页面，不让他继续访问
-            }else{
+            } else {
                 //全部权限通过，可以进行下一步操作。。。
                 openVideo(null);
                 finish();
@@ -100,6 +111,7 @@ public class MainActivity extends BaseActivity {
         }
 
     }
+
     private void showPermissionDialog() {
         if (mPermissionDialog == null) {
             mPermissionDialog = new AlertDialog.Builder(this)
@@ -135,6 +147,10 @@ public class MainActivity extends BaseActivity {
 
 
     public void openVideo(View v) {
+        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        @SuppressLint("MissingPermission") String imei = telephonyManager.getDeviceId();
+        VideoFile.DEFAULT_PREFIX = imei;
+
         // TODO: 2018/11/4
         final CaptureConfiguration config = createCaptureConfiguration();
 
@@ -155,6 +171,7 @@ public class MainActivity extends BaseActivity {
 
     /**
      * 品质
+     *
      * @param position
      * @return
      */

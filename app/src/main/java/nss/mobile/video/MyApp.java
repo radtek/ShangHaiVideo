@@ -1,9 +1,10 @@
 package nss.mobile.video;
 
-import android.support.multidex.MultiDexApplication;
 import android.util.DisplayMetrics;
 
 import com.qiniu.pili.droid.streaming.StreamingEnv;
+
+import org.litepal.LitePalApplication;
 
 import nss.mobile.video.bean.MemoryBean;
 import nss.mobile.video.event.FileMemoryEvent;
@@ -15,7 +16,7 @@ import nss.mobile.video.utils.FileMeoryUtils;
  * http://www.wanandroid.com/blog/show/2080
  * Created by mrqiu on 2017/10/15.
  */
-public class MyApp extends MultiDexApplication {
+public class MyApp extends LitePalApplication {
     private static MyApp instance;
     private static boolean backCamera;
     private CaseFileMemorySizeThread caseFileMemorySizeThread = new CaseFileMemorySizeThread();
@@ -30,7 +31,6 @@ public class MyApp extends MultiDexApplication {
         super.onCreate();
         instance = this;
         StreamingEnv.init(getApplicationContext());
-
         //OkHttpInfo.initOkHttpCard(this);
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         C.SCREEN_WIDTH = displayMetrics.widthPixels;

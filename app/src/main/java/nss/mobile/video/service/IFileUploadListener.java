@@ -10,7 +10,6 @@ import java.io.File;
  * @author ql
  */
 public interface IFileUploadListener {
-    void start();
 
     void uploadFileStart(File lastFile);
 
@@ -19,8 +18,5 @@ public interface IFileUploadListener {
     void uploadFileSuccess(File lastFile);
 
     void uploadingFile(float progress, long total, File lastFile);
-
-    void loadEnd();
-
 
 }
