@@ -92,7 +92,10 @@
         <service
             android:name=".service.UploadFileService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+
+        <activity android:name=".ui.FileUploadingActivity" />
+        <activity android:name=".ui.FtpSettingActivity"></activity>
     </application>
 
 </manifest>

@@ -48,6 +48,7 @@ public class AllFunctionActivity extends BaseActivity implements BaseQuickAdapte
 
     private void createMenu() {
         list.add(new FunctionAdapter.NormalFunction("录像基本设置", R.drawable.icon_setting, 0));
+        list.add(new FunctionAdapter.NormalFunction("ftp服务器设置", R.drawable.icon_setting, 4));
         list.add(new FunctionAdapter.NormalFunction("文件查看", R.drawable.icon_video_file, 1));
         list.add(new FunctionAdapter.NormalFunction("视频直播", R.drawable.icon_video_file, 2));
 
@@ -66,6 +67,9 @@ public class AllFunctionActivity extends BaseActivity implements BaseQuickAdapte
             case 2:
 
                 startActivity(SimLiveVideoActivity.class);
+                break;
+            case 4:
+                startActivity(FtpSettingActivity.class);
                 break;
         }
     }

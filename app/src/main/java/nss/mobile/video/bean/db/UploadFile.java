@@ -15,10 +15,14 @@ import java.util.List;
 public class UploadFile extends LitePalSupport {
     //准备上传
     public static final String UPLOAD_READY = "0";
+    //正在上传
+    public static final String UPLOAD_ING = "4";
     //上传完成;
     public static final String UPLOAD_END = "1";
     //上传失败
     public static final String UPLOAD_FAILED = "2";
+    //暂停上传
+    public static final String UPLOAD_PAUSE = "3";
 
     private int id;
 
@@ -69,5 +73,19 @@ public class UploadFile extends LitePalSupport {
 
     public static void deleteAll() {
         LitePal.deleteAll(UploadFile.class);
+    }
+
+    /**
+     * 获得第一条 需要上传的文件呢
+     *
+     * @return
+     */
+    public static UploadFile firstUploadFile() {
+
+        List<UploadFile> uploadFiles = LitePal.where("status = ? or status = ?", UPLOAD_ING,UPLOAD_READY).order("id ASC").find(UploadFile.class);
+        if (uploadFiles.size() == 0) {
+            return null;
+        }
+        return uploadFiles.get(0);
     }
 }

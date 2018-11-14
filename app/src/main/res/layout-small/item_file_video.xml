@@ -11,10 +11,11 @@
 
     <ImageView
         android:id="@+id/itemFileVideo_iv"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
         android:layout_centerVertical="true"
-        android:scaleType="centerCrop" />
+        android:scaleType="centerCrop"
+        android:visibility="gone" />
 
     <LinearLayout
         android:layout_width="match_parent"

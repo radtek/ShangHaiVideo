@@ -3,6 +3,7 @@
     <item name="topbar" type="id"/>
     <item name="top_bar_right_scanning" type="id"/>
     <item name="top_bar_right_btn" type="id"/>
+    <item name="top_bar_right_look_uploading" type="id"/>
 
 
 

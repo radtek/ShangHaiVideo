@@ -25,6 +25,7 @@ import java.util.List;
 
 import nss.mobile.video.base.BaseActivity;
 import nss.mobile.video.base.BindLayout;
+import nss.mobile.video.service.UploadFileUtils;
 import nss.mobile.video.ui.FileListActivity;
 import nss.mobile.video.ui.VideoPlayActivity;
 import nss.mobile.video.ui.wifi.WifiManagerActivity;
@@ -149,8 +150,8 @@ public class MainActivity extends BaseActivity {
     public void openVideo(View v) {
         TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         @SuppressLint("MissingPermission") String imei = telephonyManager.getDeviceId();
-        VideoFile.DEFAULT_PREFIX = imei;
-
+        VideoFile.DEFAULT_PREFIX = imei + "_";
+        UploadFileUtils.MOBILE_ID = imei;
         // TODO: 2018/11/4
         final CaptureConfiguration config = createCaptureConfiguration();
 

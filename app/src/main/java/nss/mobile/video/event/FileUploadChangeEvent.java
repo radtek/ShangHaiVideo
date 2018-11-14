@@ -24,7 +24,7 @@ public class FileUploadChangeEvent extends EventBus {
     }
 
 
-    public void postMemoryEvent(Integer l) {
+    public void postUploadStatusChange(Integer l) {
         post(l);
     }
 

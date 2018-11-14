@@ -1,346 +1,378 @@
 package nss.mobile.video.service;
 
-import android.annotation.SuppressLint;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.telephony.TelephonyManager;
+import android.support.annotation.Nullable;
 
 import org.litepal.LitePal;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import nss.mobile.video.C;
+import nss.mobile.video.bean.db.FtpIp;
 import nss.mobile.video.bean.db.UploadFile;
+import nss.mobile.video.event.FileUploadChangeEvent;
 import nss.mobile.video.http.ftp.FTPConfig;
 import nss.mobile.video.http.ftp.FTPHelper;
+import nss.mobile.video.http.ftp.UploadRemoveException;
 
 public class UploadFileService extends Service {
 
-    private Thread runThread;
-    private FileUploadBinder binder;
-    private FTPHelper mFTPHelper;
-    private Handler mHandler;
-    private FTPConfig ftpConfig;
-    private FileBox fileBox;
-    private boolean isConnecting;
-    private boolean isUploadFile;
-    private IFileUploadListener uploadListener = new IFileUploadListener() {
+    private FTPHelper ftpHelper = new FTPHelper();
+    private FileBinder fileBinder = new FileBinder();
+    private boolean ftpConnect;//是否正在连接
+    private IFtpStatusListener iFtpStatusListener = new IFtpStatusListener() {
         @Override
-        public void uploadFileStart(File lastFile) {
+        public void ftpConnectSuccess() {
             C.sHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    for (IFileUploadListener uploadListener : binder.uploadListeners) {
-                        uploadListener.uploadFileStart(lastFile);
+                    for (IFtpStatusListener ftpStatusListener : fileBinder.ftpStatusListeners) {
+                        ftpStatusListener.ftpConnectSuccess();
                     }
                 }
             });
-
         }
 
         @Override
-        public void uploadFileError(File lastFile, Exception e) {
+        public void ftpConnectFailed(Exception e) {
             C.sHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    UploadFile uploadFile = UploadFile.selectByFilePath(lastFile.getAbsolutePath());
-                    if (uploadFile == null) {
-                        uploadFile = new UploadFile();
-                        uploadFile.setFilePath(lastFile.getAbsolutePath());
-                        uploadFile.setStatus(UploadFile.UPLOAD_FAILED);
-                        uploadFile.save();
-                    } else {
-                        uploadFile.setStatus(UploadFile.UPLOAD_FAILED);
-                        uploadFile.update(uploadFile.getId());
-                    }
-                    for (IFileUploadListener uploadListener : binder.uploadListeners) {
-                        uploadListener.uploadFileError(lastFile, e);
+                    for (IFtpStatusListener ftpStatusListener : fileBinder.ftpStatusListeners) {
+                        ftpStatusListener.ftpConnectFailed(e);
                     }
                 }
             });
-
         }
 
         @Override
-        public void uploadFileSuccess(File lastFile) {
+        public void ftpOff() {
             C.sHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    UploadFile uploadFile = UploadFile.selectByFilePath(lastFile.getAbsolutePath());
-                    if (uploadFile == null) {
-                        uploadFile = new UploadFile();
-                        uploadFile.setFilePath(lastFile.getAbsolutePath());
-                        uploadFile.setStatus(UploadFile.UPLOAD_END);
-                        uploadFile.save();
-                    } else {
-                        uploadFile.setStatus(UploadFile.UPLOAD_END);
-                        uploadFile.update(uploadFile.getId());
-                    }
-                    for (IFileUploadListener uploadListener : binder.uploadListeners) {
-                        uploadListener.uploadFileSuccess(lastFile);
+                    for (IFtpStatusListener ftpStatusListener : fileBinder.ftpStatusListeners) {
+                        ftpStatusListener.ftpOff();
                     }
                 }
             });
-
-
         }
 
         @Override
-        public void uploadingFile(float progress, long total, File lastFile) {
+        public void ftpDisconnect() {
             C.sHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    for (IFileUploadListener uploadListener : binder.uploadListeners) {
-                        uploadListener.uploadingFile(progress, total, lastFile);
+                    for (IFtpStatusListener ftpStatusListener : fileBinder.ftpStatusListeners) {
+                        ftpStatusListener.ftpDisconnect();
                     }
                 }
             });
-
         }
     };
+    private Handler mHandler;
+    private boolean uploadFile;//是否在上传文件
 
-    public UploadFileService() {
-        mFTPHelper = new FTPHelper();
-        binder = new FileUploadBinder();
-        ftpConfig = new FTPConfig();
-        fileBox = new FileBox();
+    public static void reconnect(Intent intent) {
+        intent.putExtra("REC", true);
     }
 
+    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return binder;
+        return fileBinder;
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (!mFTPHelper.isConnect() && !isConnecting) {
-            runThread = new Thread(new FTPConnectRunnable());
-            runThread.start();
+
+        if (mHandler == null) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    if (mHandler == null) {
+                        Looper.prepare();
+                        mHandler = new Handler(Looper.myLooper());
+                        mHandler.post(new FtpConnectRunnable());
+                        Looper.loop();
+                    }
+                }
+            }).start();
+        } else if (intent != null) {
+            if (intent.getBooleanExtra("REC", false) && !ftpConnect) {
+                mHandler.post(new FtpConnectRunnable());
+            }
         }
+
         return super.onStartCommand(intent, flags, startId);
     }
 
-
-    private String getSaveAbsPath(String fileName) {
-        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        @SuppressLint("MissingPermission") String imei = telephonyManager.getDeviceId();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
-        String format = simpleDateFormat.format(new Date());
-        String s = "/" + imei + "/" + format + "/" + fileName;
-        return s;
+    public boolean isUploadFile() {
+        return uploadFile;
     }
 
-
-    private void uploadNext() {
-        if (!mFTPHelper.isConnect()) {
-            isUploadFile = false;
-            for (IFtpCallback callback : binder.callbacks) {
-                callback.ftpFailed("ftp已经断开连接请重新连接");
-            }
-            return;
-        }
-        UpFile next = fileBox.next();
-        if (next == null) {
-            isUploadFile = false;
-            return;
-        }
-        isUploadFile = true;
-        mHandler.post(new FTPUploadFileRunnable(next.getFile(), getSaveAbsPath(next.getFile().getName()), uploadListener));
+    public void setUploadFile(boolean uploadFile) {
+        this.uploadFile = uploadFile;
     }
 
+    public class FileBinder extends Binder implements IUploadAction {
+        private List<IFtpStatusListener> ftpStatusListeners = new ArrayList<>();
+        private List<IFileUploadListener> fileUploadListeners = new ArrayList<>();
 
-    public class FileUploadBinder extends Binder {
-        boolean uploading = false;
-        private List<IFtpCallback> callbacks = new ArrayList<>();
-        private List<IFileUploadListener> uploadListeners = new ArrayList<>();
-
-        public void addFileUploadListener(IFileUploadListener listener) {
-            uploadListeners.add(listener);
-        }
-
-        public void addFtpCallback(IFtpCallback callback) {
-            callbacks.add(callback);
-        }
-
-        public void removeFtpCallback(IFtpCallback callback) {
-            callbacks.remove(callback);
-        }
-
-        public void addUploadFile(UpFile localFile) {
-            fileBox.addFile(localFile);
-            if (!isUploadFile) {
-                uploadNext();
+        private IFileUploadListener l = new IFileUploadListener() {
+            @Override
+            public void startUploadFile(File file) {
+                UploadFile uploadFile = UploadFile.selectByFilePath(file.getAbsolutePath());
+                uploadFile.setStatus(UploadFile.UPLOAD_ING);
+                uploadFile.update(uploadFile.getId());
+                C.sHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (IFileUploadListener fileUploadListener : fileUploadListeners) {
+                            fileUploadListener.startUploadFile(file);
+                        }
+                    }
+                });
             }
-            UploadFile fileDb = new UploadFile();
-            fileDb.setFilePath(localFile.getFile().getAbsolutePath());
-            fileDb.setStatus(UploadFile.UPLOAD_READY);
-            UploadFile uploadFile = UploadFile.selectByFilePath(localFile.getFile().getAbsolutePath());
-            if (uploadFile != null) {
-                fileDb.update(uploadFile.getId());
+
+            @Override
+            public void uploadFailed(File file, Exception e) {
+                UploadFile uploadFile = UploadFile.selectByFilePath(file.getAbsolutePath());
+                uploadFile.setStatus(UploadFile.UPLOAD_FAILED);
+                uploadFile.update(uploadFile.getId());
+                C.sHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (IFileUploadListener fileUploadListener : fileUploadListeners) {
+                            fileUploadListener.uploadFailed(file, e);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void uploadEnd(File file) {
+                UploadFile uploadFile = UploadFile.selectByFilePath(file.getAbsolutePath());
+                uploadFile.setStatus(UploadFile.UPLOAD_END);
+                uploadFile.update(uploadFile.getId());
+                C.sHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (IFileUploadListener fileUploadListener : fileUploadListeners) {
+                            fileUploadListener.uploadEnd(file);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void uploadRemove(File localPath, UploadRemoveException e) {
+                C.sHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (IFileUploadListener fileUploadListener : fileUploadListeners) {
+                            fileUploadListener.uploadRemove(localPath, e);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onAfter() {
+                if (ftpHelper.isStopUpload()) {
+                    return;
+                }
+                startUpload();
+            }
+
+
+            @Override
+            public void onProcess(long currentSize, long localSize, File localPath) {
+                C.sHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (IFileUploadListener fileUploadListener : fileUploadListeners) {
+                            fileUploadListener.onProcess(currentSize, localSize, localPath);
+                        }
+                    }
+                });
+            }
+        };
+        private boolean uploadFile;
+
+        @Override
+        public void startUpload() {
+            if (!ftpHelper.isConnect()) {
+                iFtpStatusListener.ftpDisconnect();
                 return;
             }
-            fileDb.save();
-
-        }
-
-        public void stopUpload() {
-            isUploadFile = false;
-            mFTPHelper.setStopUpload(true);
-        }
-
-        public void removeFile(File localFile) {
-            fileBox.remove(localFile);
-        }
-
-        public boolean isServiceHasFile(File file) throws IOException {
-            if (!mFTPHelper.isConnect()) {
-                return false;
+            if (isUploadFile()) {
+                ftpHelper.setStopUpload(false);
+                return;
             }
-            return mFTPHelper.isHasFile(file);
+            UploadFile uploadFile = UploadFile.firstUploadFile();
+            if (uploadFile == null) {
+                return;
+            }
+            String name = new File(uploadFile.getFilePath()).getName();
+            String saveServiceFile = UploadFileUtils.getSaveServiceFilePath(name);
+            ftpHelper.setStopUpload(false);
+            uploadFile(uploadFile.getFilePath(), saveServiceFile, l);
+        }
+
+        @Override
+        public void stopUpload() {
+            List<UploadFile> uploadFiles = LitePal.where("status = ?", UploadFile.UPLOAD_ING).find(UploadFile.class);
+            for (UploadFile file : uploadFiles) {
+                file.setStatus(UploadFile.UPLOAD_READY);
+                file.update(file.getId());
+            }
+            mHandler.removeCallbacks(null);
+            ftpHelper.setStopUpload(true);
+        }
+
+        @Override
+        public void removeUpload(String absPath) {
+            UploadFile uploadFile = UploadFile.selectByFilePath(absPath);
+            if (uploadFile != null) {
+                uploadFile.delete();
+                ftpHelper.setStopFile(uploadFile.getFilePath());
+            }
+
+            FileUploadChangeEvent.getInstance().postUploadStatusChange(1);
+        }
+
+        @Override
+        public void removeAll() {
+            List<UploadFile> uploadFiles = LitePal.where("status = ?", UploadFile.UPLOAD_ING).find(UploadFile.class);
+            for (UploadFile file : uploadFiles) {
+                file.delete();
+            }
+            FileUploadChangeEvent.getInstance().postUploadStatusChange(1);
+        }
+
+        public void addFtpListener(IFtpStatusListener l) {
+            ftpStatusListeners.add(l);
+        }
+
+        public void addUploadListener(IFileUploadListener l) {
+            fileUploadListeners.add(l);
+        }
+
+        public void removeFtpListener(IFileUploadListener l) {
+            ftpStatusListeners.remove(l);
+        }
+
+        public void removeUploadListener(IFileUploadListener l) {
+            fileUploadListeners.remove(l);
         }
 
         public boolean isFtpConnect() {
-            return mFTPHelper.isConnect();
+            return ftpHelper.isConnect();
         }
 
-        public void startUpload() {
-            mFTPHelper.setStopUpload(false);
-            if (!isFtpConnect()) {
-                runThread.start();
-                return;
-            }
-            uploadNext();
-        }
-
-        public void stopUploadByFile(String filePath) {
-            mFTPHelper.setStopFile(filePath);
+        public boolean isServiceHasFile(String filePath) throws IOException {
+            return ftpHelper.isHasFile(new File(filePath));
 
         }
 
         public boolean isUploading() {
-            return isUploadFile;
+            return uploadFile;
         }
     }
 
-    class FTPConnectRunnable implements Runnable {
+    private void uploadFile(String localFile, String serviceFile, IFileUploadListener listener) {
+        mHandler.post(new FtpUploadFileRunnable(new File(localFile), serviceFile, listener));
+    }
+
+    public class FtpConnectRunnable implements Runnable {
 
         @Override
         public void run() {
             try {
-                isConnecting = true;
-                mFTPHelper.connectFtp(ftpConfig.getUrl(), ftpConfig.getPort());
-                boolean login = mFTPHelper.login(ftpConfig.getAccount(), ftpConfig.getPw());
+                ftpConnect = true;
+                List<FtpIp> all = LitePal.findAll(FtpIp.class);
+                if (all.size() == 0) {
+                    iFtpStatusListener.ftpConnectFailed(new RuntimeException("未设置ip"));
+                    return;
+                }
+                FtpIp ftpIp = all.get(0);
+                ftpHelper.connectFtp(ftpIp.getIp(), Integer.parseInt(ftpIp.getPort()));
+                boolean login = ftpHelper.login(ftpIp.getAccount(), ftpIp.getPw());
                 if (!login) {
-                    handlerLoginFailed();
+                    iFtpStatusListener.ftpConnectFailed(new RuntimeException("账号或密码错误"));
                     return;
                 }
-                handlerFtpConnectSuccess();
-                if (mHandler != null) {
-                    mHandler.removeCallbacks(null);
-                    mHandler = null;
-                }
-                Looper.prepare();
-                mHandler = new Handler(Looper.myLooper());
-                Looper.loop();
-                if (binder.uploading) {
-                    uploadNext();
-                }
+
+                iFtpStatusListener.ftpConnectSuccess();
+
+
             } catch (IOException e) {
                 e.printStackTrace();
-                handlerFtpFailed(e);
+                iFtpStatusListener.ftpConnectFailed(e);
             } finally {
-                isConnecting = false;
+                ftpConnect = false;
             }
         }
     }
 
-    private void handlerFtpFailed(IOException e) {
-        isUploadFile = false;
-        C.sHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                for (IFtpCallback callback : binder.callbacks) {
-                    callback.ftpFailed(e.getMessage());
-                }
-            }
-        });
+    public class FtpUploadFileRunnable implements Runnable {
 
-    }
+        private File localPath;
+        private String servicePath;
+        private IFileUploadListener fileUploadListener;
 
-    private void handlerFtpConnectSuccess() {
-        C.sHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                for (IFtpCallback callback : binder.callbacks) {
-                    callback.ftpConnectSuccess();
-                }
-            }
-        });
-
-    }
-
-    /**
-     * ftp登录失败
-     */
-    private void handlerLoginFailed() {
-        isUploadFile = false;
-        C.sHandler.post(new Runnable() {
-            @Override
-            public void run() {
-
-                for (IFtpCallback callback : binder.callbacks) {
-                    callback.ftpLoginFailed("账号密码错误");
-                }
-            }
-        });
-
-
-    }
-
-    class FTPUploadFileRunnable implements Runnable {
-        File uploadFile;
-        String serviceFile;
-        IFileUploadListener listener;
-
-        public FTPUploadFileRunnable(File uploadFile, String serviceFile, IFileUploadListener listener) {
-            this.uploadFile = uploadFile;
-            this.serviceFile = serviceFile;
-            this.listener = listener;
+        public FtpUploadFileRunnable(File localPath, String servicePath, IFileUploadListener fileUploadListener) {
+            this.localPath = localPath;
+            this.servicePath = servicePath;
+            this.fileUploadListener = fileUploadListener;
         }
 
         @Override
         public void run() {
             try {
-                listener.uploadFileStart(uploadFile);
-                boolean b = mFTPHelper.uploadFile(uploadFile, serviceFile, new FTPHelper.IFileUploadPressListener() {
-                    @Override
-                    public void onProcess(long currentSize, long localSize, File localPath) {
-                        listener.uploadingFile(currentSize * 1.0f / localSize, localSize, localPath);
-                    }
-                });
-                if (b) {
-                    listener.uploadFileSuccess(uploadFile);
-                    return;
+                if (!ftpHelper.isConnect()) {
+                    throw new IOException("ftp服务未连接");
                 }
-                listener.uploadFileError(uploadFile, new RuntimeException("上传失败"));
-
+                uploadFile = true;
+                fileUploadListener.startUploadFile(localPath);
+                ftpHelper.uploadFile(localPath, servicePath, fileUploadListener);
+                fileUploadListener.uploadEnd(localPath);
             } catch (IOException e) {
                 e.printStackTrace();
-                listener.uploadFileError(uploadFile, e);
+                iFtpStatusListener.ftpConnectFailed(e);
+                fileUploadListener.uploadFailed(localPath, e);
+            } catch (UploadRemoveException e) {
+                e.printStackTrace();
+                fileUploadListener.uploadRemove(localPath, e);
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+                iFtpStatusListener.ftpConnectFailed(e);
             } finally {
-                uploadNext();
+                uploadFile = false;
+                fileUploadListener.onAfter();
             }
         }
-
     }
+
+    public interface IFileUploadListener extends FTPHelper.IFileUploadPressListener {
+        void startUploadFile(File file);
+
+        void uploadFailed(File file, Exception e);
+
+        void uploadEnd(File file);
+
+        void uploadRemove(File localPath, UploadRemoveException e);
+
+        void onAfter();
+    }
+
 }

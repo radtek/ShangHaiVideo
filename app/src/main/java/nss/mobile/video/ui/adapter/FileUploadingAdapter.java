@@ -43,7 +43,7 @@ public class FileUploadingAdapter extends BaseQuickAdapter<FileProgressBean, QLV
                 .setText(R.id.uploading_fileName_tv, item.getFileName())
                 .setText(R.id.uploading_fileSize_tv, item.getFileSize() + "")
                 .setText(R.id.uploading_videoDum_tv, item.getPlayTime() + "")
-                .setText(R.id.uploading_progress_tv, String.format("%d", item.getProgress() * 100 / item.getMax()));
+                .setText(R.id.uploading_progress_tv, String.format("%d", (int)(item.getProgress() * 1.0f * 100 / item.getMax())));
         ProgressBar view = helper.getView(R.id.uploading_pb);
         view.setMax(item.getMax());
         view.setProgress(item.getProgress());

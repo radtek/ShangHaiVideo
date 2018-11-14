@@ -2,15 +2,21 @@ package nss.mobile.video.http.ftp;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPConnectionClosedException;
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPFileEntryParser;
 import org.apache.commons.net.ftp.FTPReply;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.InetAddress;
+
+import nss.mobile.video.bean.db.UploadFile;
+import nss.mobile.video.service.UploadFileUtils;
 
 /**
  * 描述：
@@ -26,8 +32,12 @@ public class FTPHelper {
     private String stopFile;
     private boolean stopUpload;
 
-    public void connectFtp(String url, int port) throws IOException {
+    public FTPHelper() {
         mFtpClient = new FTPClient();
+    }
+
+    public void connectFtp(String url, int port) throws IOException {
+        mFtpClient.setConnectTimeout(10_000);
         mFtpClient.connect(url, port);
         mFtpClient.setControlEncoding("UTF-8");
     }
@@ -45,24 +55,34 @@ public class FTPHelper {
         return mFtpClient.isConnected();
     }
 
-    public boolean isHasFile(File file) throws IOException {
+    public synchronized boolean isHasFile(File file) throws IOException {
+        mFtpClient.changeWorkingDirectory("/");
         String name = file.getName();
-        FTPFile[] files = mFtpClient.listFiles(name);
-        if (files.length == 0) {
+        mFtpClient.enterLocalPassiveMode();
+        FTPFile[] userDir = mFtpClient.listDirectories(UploadFileUtils.MOBILE_ID);
+        if (userDir.length == 0) {
             return false;
         }
-        if (files[0].getSize() != file.length()) {
-            return false;
+        String dir = "/" + UploadFileUtils.MOBILE_ID;
+        for (FTPFile ftpFile : userDir) {
+            String aDir = dir + "/" + ftpFile.getName();
+            mFtpClient.changeWorkingDirectory(aDir);
+            FTPFile[] files = mFtpClient.listFiles(name);
+            if (files.length != 0) {
+                if (files[0].getSize() == file.length()) {
+                    return true;
+                }
+                return false;
+            }
         }
-        return true;
+        return false;
     }
 
 
-    public boolean uploadFile(File localPath, String serverPath, IFileUploadPressListener listener) throws IOException {
+    public synchronized boolean uploadFile(File localPath, String serverPath, IFileUploadPressListener listener) throws IOException {
         if (!localPath.exists()) {
             return false;
         }
-
         createDirectory(serverPath);
         String fileName = localPath.getName();
         long localSize = localPath.length();
@@ -86,7 +106,7 @@ public class FTPHelper {
         int length;
         while ((length = raf.read(b)) != -1) {
             if (isStopUpload(localPath)) {
-                break;
+                throw new FileNotFoundException("停止下载");
             }
             bos.write(b, 0, length);
             currentSize = currentSize + length;
@@ -129,6 +149,7 @@ public class FTPHelper {
     private boolean isStopUpload(File localPath) {
         if (localPath.getAbsolutePath().equals(stopFile)) {
             stopFile = null;
+
             return true;
         }
         return stopUpload;

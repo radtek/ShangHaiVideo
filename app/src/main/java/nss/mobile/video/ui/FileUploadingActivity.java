@@ -15,8 +15,12 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
 
+import org.litepal.LitePal;
+
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import nss.mobile.video.R;
@@ -25,14 +29,15 @@ import nss.mobile.video.base.BindLayout;
 import nss.mobile.video.base.bind.BindView;
 import nss.mobile.video.bean.db.UploadFile;
 import nss.mobile.video.event.FileUploadChangeEvent;
-import nss.mobile.video.service.IFileUploadListener;
-import nss.mobile.video.service.IFtpCallback;
+import nss.mobile.video.http.ftp.UploadRemoveException;
+import nss.mobile.video.service.IFtpStatusListener;
 import nss.mobile.video.service.UploadFileService;
 import nss.mobile.video.ui.adapter.FileUploadingAdapter;
+import nss.mobile.video.utils.UnitHelper;
 import nss.mobile.video.utils.div.DividerItemDecoration;
 
 @BindLayout(layoutRes = R.layout.activity_file_uploading, title = "上传文件")
-public class FileUploadingActivity extends BaseActivity implements BaseQuickAdapter.OnItemChildClickListener, ServiceConnection, IFileUploadListener, IFtpCallback {
+public class FileUploadingActivity extends BaseActivity implements BaseQuickAdapter.OnItemChildClickListener, ServiceConnection, IFtpStatusListener, UploadFileService.IFileUploadListener {
 
     @BindView(R.id.fileUploading_rv)
     RecyclerView rv;
@@ -48,15 +53,14 @@ public class FileUploadingActivity extends BaseActivity implements BaseQuickAdap
     private int deletePosition;
 
     private FileUploadingAdapter uploadingAdapter = new FileUploadingAdapter();
-    private UploadFileService.FileUploadBinder fileUploadBinder;
     private List<FileProgressBean> data = new ArrayList<>();
+    private UploadFileService.FileBinder fileBind;
 
 
     @Override
     public void initData() {
         super.initData();
-        Intent intent = new Intent(this, UploadFileService.class);
-        bindService(intent, this, BIND_AUTO_CREATE);
+
     }
 
     @Override
@@ -64,13 +68,69 @@ public class FileUploadingActivity extends BaseActivity implements BaseQuickAdap
         super.initWidget();
         openTv.setOnClickListener(this);
         deleteTv.setOnClickListener(this);
-
+        errorHintGroup.setOnClickListener(this);
         rv.setLayoutManager(new LinearLayoutManager(this));
         rv.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL, 10, Color.GRAY));
         rv.setAdapter(uploadingAdapter);
 
 
         uploadingAdapter.setOnItemChildClickListener(this);
+        Intent intent = new Intent(this, UploadFileService.class);
+        bindService(intent, this, BIND_AUTO_CREATE);
+        resetData();
+    }
+
+    private void resetData() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                data.clear();
+                SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                List<UploadFile> uploadFiles = LitePal.where("status = ? or status = ?", UploadFile.UPLOAD_ING, UploadFile.UPLOAD_READY).find(UploadFile.class);
+                for (UploadFile uploadFile : uploadFiles) {
+                    File file = new File(uploadFile.getFilePath());
+                    if (!file.exists()) {
+                        fileBind.removeUpload(file.getAbsolutePath());
+                        continue;
+                    }
+                    FileProgressBean f = new FileProgressBean();
+                    f.setFileName(file.getName());
+                    long l1 = file.lastModified();
+                    f.setStartTime(s.format(new Date(l1)));
+                    f.setFilePath(file.getAbsolutePath());
+                    f.setUpStatus("未知");
+                    switch (uploadFile.getStatus()) {
+                        case UploadFile.UPLOAD_FAILED:
+                            f.setUpStatus("上传失败");
+                            break;
+                        case UploadFile.UPLOAD_ING:
+                            f.setUpStatus("上传中");
+                            break;
+                        case UploadFile.UPLOAD_READY:
+                            f.setUpStatus("准备上传");
+                            break;
+                    }
+                    f.setMax(100);
+                    f.setFileSize(UnitHelper.formatterFileSize(file.length()));
+                    data.add(f);
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        uploadingAdapter.setNewData(data);
+                        uploadingAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        }).start();
+
+    }
+
+    private void restartService() {
+        Intent intent = new Intent(this, UploadFileService.class);
+        UploadFileService.reconnect(intent);
+        startService(intent);
     }
 
     @Override
@@ -78,15 +138,21 @@ public class FileUploadingActivity extends BaseActivity implements BaseQuickAdap
         super.forbidClick(v);
         if (v.getId() == deleteTv.getId()) {
             UploadFile.deleteAll();
-            FileUploadChangeEvent.getInstance().postMemoryEvent(2);
+            FileUploadChangeEvent.getInstance().postUploadStatusChange(2);
         } else if (v.getId() == openTv.getId()) {
-            if (fileUploadBinder.isUploading()) {
-                fileUploadBinder.stopUpload();
-                openTv.setText("全部开启");
+            if (fileBind.isFtpConnect()) {
+                if (fileBind.isUploading()) {
+                    fileBind.stopUpload();
+                    openTv.setText("全部开启");
+                } else {
+                    fileBind.startUpload();
+                }
+
             } else {
-                fileUploadBinder.startUpload();
-                openTv.setText("全部关闭");
+
             }
+        } else if (v.getId() == errorHintGroup.getId()) {
+            restartService();
         }
     }
 
@@ -99,9 +165,8 @@ public class FileUploadingActivity extends BaseActivity implements BaseQuickAdap
                         @Override
                         public void onClick(QMUIDialog dialog, int index) {
                             String filePath = data.get(deletePosition).getFilePath();
-                            fileUploadBinder.stopUploadByFile(filePath);
-                            UploadFile.deleteByFilePath(filePath);
-                            FileUploadChangeEvent.getInstance().postMemoryEvent(1);
+                            fileBind.removeUpload(filePath);
+                            resetData();
                             dialog.cancel();
                         }
                     })
@@ -117,25 +182,23 @@ public class FileUploadingActivity extends BaseActivity implements BaseQuickAdap
         }
     }
 
-    private void restartService() {
-        Intent intent = new Intent(this, UploadFileService.class);
-        startService(intent);
-    }
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
-        fileUploadBinder = (UploadFileService.FileUploadBinder) service;
-        fileUploadBinder.addFileUploadListener(this);
-        fileUploadBinder.addFtpCallback(this);
+        fileBind = (UploadFileService.FileBinder) service;
+        fileBind.addFtpListener(this);
+        fileBind.addUploadListener(this);
 
-        if (fileUploadBinder.isFtpConnect()) {
+        if (!fileBind.isFtpConnect()) {
             errorHintGroup.setVisibility(View.VISIBLE);
             hintTv.setText("启动ftp服务中");
+            resetData();
             restartService();
             return;
         }
+        restartService();
         errorHintGroup.setVisibility(View.GONE);
-
+        changeButton();
     }
 
     @Override
@@ -143,73 +206,82 @@ public class FileUploadingActivity extends BaseActivity implements BaseQuickAdap
 
     }
 
-    @Override
-    public void uploadFileStart(File lastFile) {
-
-    }
 
     @Override
-    public void uploadFileError(File lastFile, Exception e) {
-        for (FileProgressBean datum : data) {
-            if (datum.getFilePath().equals(lastFile.getAbsolutePath())) {
-                datum.setUploadErrorHint(e.getMessage());
-                uploadingAdapter.setNewData(data);
-                uploadingAdapter.notifyDataSetChanged();
-                break;
-            }
-        }
-    }
-
-    @Override
-    public void uploadFileSuccess(File lastFile) {
-        for (FileProgressBean datum : data) {
-            if (datum.getFilePath().equals(lastFile.getAbsolutePath())) {
-                data.remove(datum);
-                uploadingAdapter.setNewData(data);
-                uploadingAdapter.notifyDataSetChanged();
-                break;
-            }
-        }
-    }
-
-    @Override
-    public void uploadingFile(float progress, long total, File lastFile) {
-        for (FileProgressBean datum : data) {
-            if (datum.getFilePath().equals(lastFile.getAbsolutePath())) {
-                datum.setMax(100);
-                datum.setProgress((int) (progress * 100));
-                uploadingAdapter.setNewData(data);
-                uploadingAdapter.notifyDataSetChanged();
-                break;
-            }
-        }
-    }
-
-    @Override
-    public void ftpFailed(String error) {
-        errorHintGroup.setVisibility(View.VISIBLE);
-        hintTv.setText(error);
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(this);
     }
 
     @Override
     public void ftpConnectSuccess() {
         errorHintGroup.setVisibility(View.GONE);
-        if (fileUploadBinder.isUploading()) {
-            openTv.setText("全部关闭");
+        changeButton();
+    }
+
+    private void changeButton() {
+        if (fileBind.isUploading()) {
+            openTv.setText("全部暂停");
         } else {
             openTv.setText("全部开启");
         }
     }
 
     @Override
-    public void ftpLoginFailed(String msg) {
+    public void ftpConnectFailed(Exception e) {
         errorHintGroup.setVisibility(View.VISIBLE);
-        hintTv.setText(msg);
+        hintTv.setText(e.getMessage());
+
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unbindService(this);
+    public void ftpOff() {
+        errorHintGroup.setVisibility(View.VISIBLE);
+        hintTv.setText("ftp断开连接");
+    }
+
+    @Override
+    public void ftpDisconnect() {
+        errorHintGroup.setVisibility(View.VISIBLE);
+        hintTv.setText("ftp断开连接");
+    }
+
+    @Override
+    public void startUploadFile(File file) {
+        resetData();
+        changeButton();
+    }
+
+    @Override
+    public void uploadFailed(File file, Exception e) {
+        resetData();
+    }
+
+    @Override
+    public void uploadEnd(File file) {
+        resetData();
+    }
+
+    @Override
+    public void uploadRemove(File localPath, UploadRemoveException e) {
+        resetData();
+    }
+
+    @Override
+    public void onAfter() {
+        resetData();
+    }
+
+    @Override
+    public void onProcess(long currentSize, long localSize, File localPath) {
+        for (int i = 0; i < data.size(); i++) {
+            FileProgressBean datum = data.get(i);
+            if (datum.getFilePath().equals(localPath.getAbsolutePath())) {
+                datum.setMax((int) localSize);
+                datum.setProgress((int) currentSize);
+                uploadingAdapter.notifyItemChanged(i);
+                break;
+            }
+        }
     }
 }

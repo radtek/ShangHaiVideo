@@ -133,4 +133,9 @@ dependencies {
     compile 'com.qiniu:happy-dns:0.2.8'
     compile 'com.qiniu.pili:pili-android-qos:0.8.+'
     implementation files('libs/pldroid-media-streaming-2.3.0.jar')
+    implementation 'org.litepal.android:java:3.0.0'
+
+    //ftp需要的jar包
+    compile group: 'commons-net', name: 'commons-net', version: '3.6'
+
 }
