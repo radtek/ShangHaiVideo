@@ -58,21 +58,23 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".zxing.activity.CaptureActivity" />
+        <activity
+            android:name=".zxing.activity.CaptureActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".video.VideoCaptureActivity"
             android:screenOrientation="landscape" />
         <activity
-            android:name=".ui.VideoPlayActivity"
+            android:name=".ui.video.VideoPlayActivity"
             android:configChanges="orientation|keyboardHidden|screenSize" />
         <activity
-            android:name=".ui.SettingActivity"
+            android:name=".ui.video.SettingActivity"
             android:configChanges="orientation|keyboardHidden|screenSize" />
         <activity
-            android:name=".ui.FileListActivity"
+            android:name=".ui.video.FileListActivity"
             android:configChanges="orientation|keyboardHidden|screenSize" />
         <activity
-            android:name=".ui.AllFunctionActivity"
+            android:name=".ui.video.AllFunctionActivity"
             android:configChanges="orientation|keyboardHidden|screenSize" />
         <activity
             android:name=".ui.wifi.WifiManagerActivity"
@@ -81,7 +83,7 @@
             android:name=".video.QualitySelectActivity"
             android:configChanges="orientation|keyboardHidden|screenSize" />
         <activity
-            android:name=".ui.SimLiveVideoActivity"
+            android:name=".ui.video.SimLiveVideoActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="landscape" />
 
@@ -94,8 +96,13 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".ui.FileUploadingActivity" />
-        <activity android:name=".ui.FtpSettingActivity"></activity>
+        <activity
+            android:name=".ui.video.FileUploadingActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize" />
+        <activity
+            android:name=".ui.video.FtpSettingActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize" />
+        <activity android:name=".ui.HomeActivity"></activity>
     </application>
 
 </manifest>

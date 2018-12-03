@@ -38,7 +38,7 @@ import nss.mobile.video.base.BindLayout;
 import nss.mobile.video.base.bind.BindView;
 import nss.mobile.video.bean.MemoryBean;
 import nss.mobile.video.event.FileMemoryEvent;
-import nss.mobile.video.ui.AllFunctionActivity;
+import nss.mobile.video.ui.video.AllFunctionActivity;
 import nss.mobile.video.ui.wifi.WifiManagerActivity;
 import nss.mobile.video.utils.UnitHelper;
 import nss.mobile.video.utils.preferences.QualityPreferences;
@@ -77,6 +77,7 @@ public class VideoCaptureActivity extends BaseActivity implements RecordingButto
     private VideoRecorder mVideoRecorder;
     private boolean isFrontFacingCameraSelected = true;
     private boolean isVideoPause = false;
+    private boolean isVideoing = false;
     private CameraWrapper cameraWrapper;
 
     private boolean isRestart;
@@ -186,6 +187,7 @@ public class VideoCaptureActivity extends BaseActivity implements RecordingButto
     public void onRecordingStarted() {
         MyApp.getInstance().startCaseFileMemoryThread();
         mVideoCaptureView.updateUIRecordingOngoing();
+        isVideoing = true;
     }
 
     @Override
@@ -232,7 +234,6 @@ public class VideoCaptureActivity extends BaseActivity implements RecordingButto
     }
 
 
-
     @Override
     public void onRecordingStopped(String message) {
         if (message != null) {
@@ -247,6 +248,7 @@ public class VideoCaptureActivity extends BaseActivity implements RecordingButto
     @Override
     public void onRecordingSuccess() {
         mVideoRecorded = true;
+        isVideoing = false;
     }
 
     @Override
@@ -342,6 +344,15 @@ public class VideoCaptureActivity extends BaseActivity implements RecordingButto
         }
         String allSize = UnitHelper.formatterFileSize(allMemoery.getAvailableInternalMemorySize());
         mVideoCaptureView.setFileAndAllSize(fileSize, allSize);
+        float s = allMemoery.getAvailableInternalMemorySize() *1.0f / allMemoery.getTotalInternalMemorySize();
+        if (isVideoing) {
+            if (s < 0.1f) {
+                mVideoCaptureView.showMemoryError();
+            } else if (s < 0.03f) {
+                onRecordButtonClicked();
+            }
+        }
+
 
     }
 

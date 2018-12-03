@@ -6,8 +6,6 @@ import android.support.annotation.LayoutRes;
 import android.support.annotation.StringRes;
 
 
-import nss.mobile.video.R;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -15,10 +13,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import nss.mobile.video.R;
+
 /**
  * @author ql
- *         邮箱 email:strive_bug@yeah.net
- *         创建时间 2017/11/25
+ * 邮箱 email:strive_bug@yeah.net
+ * 创建时间 2017/11/25
  */
 @Documented
 @Inherited
@@ -36,11 +36,14 @@ public @interface BindLayout {
 
     /**
      * 如设置为 0 则不显示
+     *
      * @return
      */
-    @DrawableRes int backRes() default R.drawable.ic_navigate_before_black_24dp;
+    @DrawableRes int backRes() default R.drawable.qmui_icon_topbar_back;
 
     @IdRes int topbarId() default R.id.topbar;
 
     boolean bindTopBar() default true;
+
+    boolean addStatusBar() default false;
 }

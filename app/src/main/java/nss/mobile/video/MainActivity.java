@@ -8,7 +8,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -18,17 +17,13 @@ import android.telephony.TelephonyManager;
 import android.view.View;
 import android.view.WindowManager;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import nss.mobile.video.base.BaseActivity;
 import nss.mobile.video.base.BindLayout;
 import nss.mobile.video.service.UploadFileUtils;
-import nss.mobile.video.ui.FileListActivity;
-import nss.mobile.video.ui.VideoPlayActivity;
-import nss.mobile.video.ui.wifi.WifiManagerActivity;
+import nss.mobile.video.ui.HomeActivity;
 import nss.mobile.video.video.VideoCaptureActivity;
 import nss.mobile.video.video.VideoFile;
 import nss.mobile.video.video.configuration.CaptureConfiguration;
@@ -148,6 +143,11 @@ public class MainActivity extends BaseActivity {
 
 
     public void openVideo(View v) {
+
+        if (true) {
+            startActivity(HomeActivity.class);
+            return;
+        }
         TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         @SuppressLint("MissingPermission") String imei = telephonyManager.getDeviceId();
         VideoFile.DEFAULT_PREFIX = imei + "_";

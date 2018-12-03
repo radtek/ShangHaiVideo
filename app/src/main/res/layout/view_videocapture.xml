@@ -29,30 +29,67 @@
 
     <include layout="@layout/layout_recordingtime" />
 
+    <FrameLayout
+        android:visibility="visible"
+        android:background="@drawable/s_error_bg"
+        android:id="@+id/videocapture_error_group"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_gravity="center"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <TextView
+                android:textColor="@color/text_white_color"
+                android:layout_gravity="center"
+                android:text="内存不足10%"
+                android:gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/videocapture_close_error_tv"
+                android:layout_marginTop="6dp"
+                android:paddingBottom="6dp"
+                android:paddingTop="6dp"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                style="@style/btnNormalRadius"
+                android:text="不需要显示"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+    </FrameLayout>
+
     <ImageView
         android:id="@+id/videocapture_allMenu_iv"
-        android:clickable="true"
-        android:padding="@dimen/margin_normal"
         android:layout_width="50dp"
         android:layout_height="50dp"
+        android:clickable="true"
+        android:padding="@dimen/margin_normal"
         android:src="@android:drawable/ic_dialog_dialer" />
 
     <ImageView
-        android:clickable="true"
         android:id="@+id/videocapture_wifi_iv"
-        android:padding="@dimen/margin_normal"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_below="@+id/videocapture_allMenu_iv"
-        android:src="@drawable/icon_wifi"
-        android:layout_width="50dp"
-        android:layout_height="50dp" />
-    <ImageView
         android:clickable="true"
-        android:id="@+id/videocapture_quality_iv"
         android:padding="@dimen/margin_normal"
-        android:layout_below="@+id/videocapture_wifi_iv"
-        android:src="@drawable/icon_video_big"
+        android:src="@drawable/icon_wifi" />
+
+    <ImageView
+        android:id="@+id/videocapture_quality_iv"
         android:layout_width="50dp"
-        android:layout_height="50dp" />
+        android:layout_height="50dp"
+        android:layout_below="@+id/videocapture_wifi_iv"
+        android:clickable="true"
+        android:padding="@dimen/margin_normal"
+        android:src="@drawable/icon_video_big" />
+
     <TextView
         android:id="@+id/videocapture_auto_time_tv"
         android:layout_width="wrap_content"
@@ -101,7 +138,6 @@
     </RelativeLayout>
 
     <LinearLayout
-        android:visibility="gone"
         android:id="@+id/videocapture_size_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -109,7 +145,8 @@
         android:layout_alignParentLeft="true"
         android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
 
         <TextView
             android:layout_width="wrap_content"
@@ -117,10 +154,10 @@
             android:text="存储状态:" />
 
         <TextView
-            android:layout_marginLeft="@dimen/margin_normal"
             android:id="@+id/videocapture_fileSize_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/margin_normal"
             android:text="1000" />
 
         <TextView
@@ -134,4 +171,7 @@
             android:layout_height="wrap_content"
             android:text="22222" />
     </LinearLayout>
+
+
+
 </RelativeLayout>

@@ -16,6 +16,6 @@ public class UploadFileUtils {
 
     public static String getSaveServiceFilePath(String fileName) {
         final String dateStamp = new SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).format(System.currentTimeMillis());
-        return "/" + MOBILE_ID + "/" + dateStamp + "/" + fileName;
+        return "/" + dateStamp + "/" + MOBILE_ID + "/" + fileName;
     }
 }

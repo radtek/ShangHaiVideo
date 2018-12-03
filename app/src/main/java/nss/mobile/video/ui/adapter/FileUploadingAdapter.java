@@ -1,17 +1,13 @@
 package nss.mobile.video.ui.adapter;
 
-import android.support.annotation.Nullable;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.bumptech.glide.Glide;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 
-import java.util.List;
-
 import nss.mobile.video.R;
-import nss.mobile.video.ui.FileProgressBean;
+import nss.mobile.video.ui.video.FileProgressBean;
 
 /**
  * 描述：

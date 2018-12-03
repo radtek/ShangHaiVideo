@@ -9,14 +9,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
-import nss.mobile.video.R;
 import com.qmuiteam.qmui.alpha.QMUIAlphaImageButton;
+import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.qmuiteam.qmui.widget.QMUITopBar;
-
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
+import nss.mobile.video.R;
 
 /**
  * @author ql
@@ -57,6 +58,13 @@ public class LayoutUtils {
         linearLayout.addView(inflate, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         setTopbar(fragment, bindLayout, topBar);
+        if (bindLayout.addStatusBar()) {
+            View empty = new View(fragment.getContext());
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, QMUIDisplayHelper.getStatusBarHeight(fragment.getContext()));
+            empty.setLayoutParams(lp);
+            empty.setBackgroundResource(R.color.color_theme);
+            linearLayout.addView(empty,0);
+        }
 
         return linearLayout;
 
@@ -135,6 +143,16 @@ public class LayoutUtils {
         }
 
         setTopbar((View.OnClickListener) object, annotation, topBar);
+        if (annotation.addStatusBar()) {
+            ViewGroup v = (ViewGroup) topBar.getParent();
+            View empty = new View((Context) object);
+            LinearLayout.LayoutParams lp =
+                    new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT
+                            , QMUIDisplayHelper.getStatusBarHeight((Context) object));
+            empty.setLayoutParams(lp);
+            empty.setBackgroundResource(R.color.color_theme);
+            v.addView(empty,0);
+        }
     }
 
     private static void setTopbar(View.OnClickListener object, BindLayout annotation, QMUITopBar topBar) {
@@ -182,6 +200,7 @@ public class LayoutUtils {
         if (setLayoutRes != null) {
             setLayoutRes.invoke(object, linearLayout);
         }
+
     }
 
     public static void bindFragmentTopbar(BaseFragment fragment, View view) {

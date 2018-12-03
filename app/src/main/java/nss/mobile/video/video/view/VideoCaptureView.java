@@ -30,6 +30,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import nss.mobile.video.C;
 import nss.mobile.video.R;
 import nss.mobile.video.utils.LogUtils;
 import nss.mobile.video.video.preview.CapturePreview;
@@ -46,6 +47,9 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
     private ViewGroup mSizeGroup;
     private TextView mFileSizeTv;
     private TextView mAllSizeTv;
+
+    private ViewGroup mErrorGroup;
+    private TextView mCloseErrorTv;
 
     private ImageView mAllMenuIv;
     private ImageView mWifiIv;
@@ -120,6 +124,10 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
         mAllSizeTv = videoCapture.findViewById(R.id.videocapture_allSize_tv);
         mFileSizeTv = videoCapture.findViewById(R.id.videocapture_fileSize_tv);
 
+        mErrorGroup = videoCapture.findViewById(R.id.videocapture_error_group);
+        mCloseErrorTv = videoCapture.findViewById(R.id.videocapture_close_error_tv);
+        mCloseErrorTv.setOnClickListener(this);
+
         mAutoTimeTv = videoCapture.findViewById(R.id.videocapture_auto_time_tv);
 
         mSurfaceView = (SurfaceView) videoCapture.findViewById(R.id.videocapture_preview_sv);
@@ -150,6 +158,7 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
 
     public void updateUINotRecording() {
         startTime = 0l;
+        mErrorGroup.setVisibility(GONE);
         mPauseBtnIv.setVisibility(GONE);
         mQualityIv.setVisibility(VISIBLE);
         mTimerTv.setVisibility(GONE);
@@ -168,6 +177,8 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
         mSizeGroup.setVisibility(View.GONE);
         mAllMenuIv.setVisibility(View.VISIBLE);
 
+        notShowError = false;
+
     }
 
     private Runnable updateTimerThread = new Runnable() {
@@ -183,6 +194,7 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
     public void updateUIRecordingOngoing() {
         mRecordBtnIv.setSelected(true);
         mAllMenuIv.setVisibility(View.GONE);
+        mErrorGroup.setVisibility(GONE);
 
         mPauseBtnIv.setVisibility(View.VISIBLE);
         mRecordBtnIv.setVisibility(View.VISIBLE);
@@ -233,6 +245,9 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
             mRecordingInterface.onScanningWifiButtonClick();
         } else if (v.getId() == mQualityIv.getId()) {
             mRecordingInterface.onQualityButtonClick();
+        } else if (v.getId() == mCloseErrorTv.getId()) {
+            notShowError = true;
+            mErrorGroup.setVisibility(GONE);
         }
 
     }
@@ -292,5 +307,34 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
     public void updateUIRecordingAgain() {
         mPauseBtnIv.setSelected(false);
         customHandler.postDelayed(updateTimerThread, 1_000);
+    }
+
+    private int showErrorGroupCount = 0;
+    private boolean showError = false;
+    private boolean notShowError = false;
+
+    public void showMemoryError() {
+        if (showError) {
+            return;
+        }
+        if (notShowError) {
+            return;
+        }
+        mErrorGroup.setVisibility(VISIBLE);
+        showError = true;
+        C.sHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mErrorGroup.setSelected(!mErrorGroup.isSelected());
+                if (notShowError || showErrorGroupCount >= 10) {
+                    showErrorGroupCount = 0;
+                    mErrorGroup.setVisibility(GONE);
+                    showError = false;
+                    return;
+                }
+                C.sHandler.postDelayed(this, 500);
+                showErrorGroupCount++;
+            }
+        });
     }
 }
