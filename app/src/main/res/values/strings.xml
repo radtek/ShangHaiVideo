@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">视频播放</string>
+    <string name="app_name">移动取证</string>
     <string name="wifi_connect_loading">wifi连接中...</string>
     <string name="wifi_connect_failed">wifi连接失败</string>
     <string name="wifi_connect_success">wifi连接失败</string>
