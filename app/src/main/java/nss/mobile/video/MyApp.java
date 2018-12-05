@@ -1,5 +1,6 @@
 package nss.mobile.video;
 
+import android.support.multidex.MultiDex;
 import android.util.DisplayMetrics;
 
 import com.qiniu.pili.droid.streaming.StreamingEnv;
@@ -29,8 +30,9 @@ public class MyApp extends LitePalApplication {
     @Override
     public void onCreate() {
         super.onCreate();
+        MultiDex.install(this);
         instance = this;
-        StreamingEnv.init(getApplicationContext());
+//        StreamingEnv.init(getApplicationContext());
         //OkHttpInfo.initOkHttpCard(this);
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         C.SCREEN_WIDTH = displayMetrics.widthPixels;
@@ -61,13 +63,27 @@ public class MyApp extends LitePalApplication {
 
         @Override
         public void run() {
-            long availableInternalMemorySize = FileMeoryUtils.getAvailableInternalMemorySize();
-            long totalInternalMemorySize = FileMeoryUtils.getTotalInternalMemorySize();
-            memoryBean.setAvailableInternalMemorySize(availableInternalMemorySize);
-            memoryBean.setTotalInternalMemorySize(totalInternalMemorySize);
+            String extendedMemoryPath = FileMeoryUtils.getExtendedMemoryPath(getContext());
+            if (extendedMemoryPath == null) {
+                long availableInternalMemorySize = FileMeoryUtils.getAvailableInternalMemorySize();
+                long totalInternalMemorySize = FileMeoryUtils.getTotalInternalMemorySize();
+                memoryBean.setAvailableInternalMemorySize(availableInternalMemorySize);
+                memoryBean.setTotalInternalMemorySize(totalInternalMemorySize);
+                FileMemoryEvent.getInstance().postMemoryEvent(memoryBean);
+                C.sHandler.postDelayed(this, 1_000);
+                return;
+            }
+
+
+            long sdTotalSize = FileMeoryUtils.getSDTotalSize(extendedMemoryPath);
+            long sdMomery = FileMeoryUtils.getSDAvailableSize(extendedMemoryPath);
+            memoryBean.setAvailableInternalMemorySize(sdMomery);
+            memoryBean.setTotalInternalMemorySize(sdTotalSize);
             FileMemoryEvent.getInstance().postMemoryEvent(memoryBean);
             C.sHandler.postDelayed(this, 1_000);
         }
+
+
     }
 
 

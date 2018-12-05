@@ -1,13 +1,19 @@
 package nss.mobile.video.utils;
 
+import android.content.Context;
 import android.os.Environment;
 import android.os.StatFs;
+import android.os.storage.StorageManager;
 import android.text.format.Formatter;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -87,13 +93,49 @@ public class FileMeoryUtils {
 
 
     /**
+     * 获取外置sd卡路径
+     *
+     * @param mContext
+     * @return 如果返回null，则没有外置sd卡
+     */
+    public static String getExtendedMemoryPath(Context mContext) {
+        StorageManager mStorageManager = (StorageManager) mContext.getSystemService(Context.STORAGE_SERVICE);
+        Class storageVolumeClazz = null;
+        try {
+            storageVolumeClazz = Class.forName("android.os.storage.StorageVolume");
+            Method getVolumeList = mStorageManager.getClass().getMethod("getVolumeList");
+            Method getPath = storageVolumeClazz.getMethod("getPath");
+            Method isRemovable = storageVolumeClazz.getMethod("isRemovable");
+            Object result = getVolumeList.invoke(mStorageManager);
+            final int length = Array.getLength(result);
+            for (int i = 0; i < length; i++) {
+                Object storageVolumeElement = Array.get(result, i);
+                String path = (String) getPath.invoke(storageVolumeElement);
+                boolean removable = (Boolean) isRemovable.invoke(storageVolumeElement);
+                if (removable) {
+                    return path;
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    /**
      * 获得SD卡总大小
      *
      * @return
      */
-    private Long getSDTotalSize() {
-        File path = Environment.getExternalStorageDirectory();
-        StatFs stat = new StatFs(path.getPath());
+    public static Long getSDTotalSize(String file) {
+        StatFs stat = new StatFs(file);
         long blockSize = stat.getBlockSize();
         long totalBlocks = stat.getBlockCount();
         return blockSize * totalBlocks;
@@ -105,13 +147,13 @@ public class FileMeoryUtils {
      *
      * @return
      */
-    private long getSDAvailableSize() {
-        File path = Environment.getExternalStorageDirectory();
-        StatFs stat = new StatFs(path.getPath());
+    public static long getSDAvailableSize(String file) {
+        StatFs stat = new StatFs(file);
         long blockSize = stat.getBlockSize();
         long availableBlocks = stat.getAvailableBlocks();
 //        return Formatter.formatFileSize(MainActivity.this, blockSize * availableBlocks);
         return blockSize * availableBlocks;
     }
+
 
 }
