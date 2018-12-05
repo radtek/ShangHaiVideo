@@ -2,6 +2,7 @@ package nss.mobile.video.utils;
 
 import android.os.Environment;
 import android.os.StatFs;
+import android.text.format.Formatter;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -71,6 +72,46 @@ public class FileMeoryUtils {
             md5.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
         }
         return md5.toString().toLowerCase();
+    }
+
+
+    public static File getSDPath() {
+        File sdDir = null;
+        boolean sdCardExist = Environment.getExternalStorageState()
+                .equals(android.os.Environment.MEDIA_MOUNTED);//判断sd卡是否存在
+        if (sdCardExist) {
+            sdDir = Environment.getExternalStorageDirectory();//获取跟目录
+        }
+        return sdDir;
+    }
+
+
+    /**
+     * 获得SD卡总大小
+     *
+     * @return
+     */
+    private Long getSDTotalSize() {
+        File path = Environment.getExternalStorageDirectory();
+        StatFs stat = new StatFs(path.getPath());
+        long blockSize = stat.getBlockSize();
+        long totalBlocks = stat.getBlockCount();
+        return blockSize * totalBlocks;
+        //        return Formatter.formatFileSize(MainActivity.this, blockSize * totalBlocks);
+    }
+
+    /**
+     * 获得sd卡剩余容量，即可用大小
+     *
+     * @return
+     */
+    private long getSDAvailableSize() {
+        File path = Environment.getExternalStorageDirectory();
+        StatFs stat = new StatFs(path.getPath());
+        long blockSize = stat.getBlockSize();
+        long availableBlocks = stat.getAvailableBlocks();
+//        return Formatter.formatFileSize(MainActivity.this, blockSize * availableBlocks);
+        return blockSize * availableBlocks;
     }
 
 }
