@@ -2,6 +2,8 @@ package nss.mobile.video.ui.video;
 
 import android.text.TextUtils;
 
+import org.litepal.crud.LitePalSupport;
+
 /**
  * 描述：
  * 邮箱 email:strive_bug@yeah.net
@@ -10,6 +12,7 @@ import android.text.TextUtils;
  * @author ql
  */
 public class FileBean {
+
     //单元内容:预览图、⽂文件名、开始时间、时⻓长、⽂文件⼤大⼩小、上传状态、校验码;
     private String icon;
     private String fileName;

@@ -197,6 +197,7 @@ public class FileListActivity extends BaseActivity implements BaseQuickAdapter.O
                             loadDataGroup.setVisibility(View.VISIBLE);
                         }
                     });
+
                     for (FileBean datum : data) {
                         boolean isServiceHas = false;
                         if (fileBind != null && fileBind.isFtpConnect()) {

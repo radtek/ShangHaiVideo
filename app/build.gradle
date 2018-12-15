@@ -2,10 +2,9 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion rootProject.ext.sdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
     defaultConfig {
         applicationId "nss.mobile.video"
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion rootProject.ext.sdkVersion
         versionCode 1
         versionName "1.0.0"
@@ -19,6 +18,15 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'x86', 'x86_64', 'arm64-v8a', 'armeabi-v7a', 'armeabi'
+            universalApk false
         }
     }
 
@@ -48,49 +56,50 @@ android {
         exclude 'META-INF/maven/org.bytedeco.javacpp-presets/ffmpeg/pom.properties'
         exclude 'META-INF/maven/org.bytedeco.javacpp-presets/ffmpeg/pom.xml'
 
-        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-locale-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86/concrt140.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-utility-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-math-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-locale-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/linux-x86_64/libgomp.so.1'
-        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-stdio-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-convert-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/macosx-x86_64/libusb-1.0.0.dylib'
-        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-time-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/linux-x86/libgomp.so.1'
-        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-math-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-environment-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-multibyte-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-runtime-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86_64/msvcp140.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-stdio-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-string-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86_64/vcruntime140.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-multibyte-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-filesystem-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-time-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86/msvcp140.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-environment-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86_64/concrt140.dll'
-        pickFirst 'org/bytedeco/javacpp/api-ms-win-crt-heap-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-heap-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-heap-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86/vcruntime140.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-convert-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-string-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-runtime-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-filesystem-l1-1-0.dll'
-        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-utility-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-locale-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86/concrt140.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-utility-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-math-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-locale-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/linux-x86_64/libgomp.so.1'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-stdio-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-convert-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/macosx-x86_64/libusb-1.0.0.dylib'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-time-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/linux-x86/libgomp.so.1'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-math-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-environment-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-multibyte-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-runtime-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86_64/msvcp140.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-stdio-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-string-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86_64/vcruntime140.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-multibyte-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-filesystem-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-time-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86/msvcp140.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-environment-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86_64/concrt140.dll'
+//        pickFirst 'org/bytedeco/javacpp/api-ms-win-crt-heap-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-heap-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-heap-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86/vcruntime140.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-convert-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-string-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-runtime-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86/api-ms-win-crt-filesystem-l1-1-0.dll'
+//        pickFirst 'org/bytedeco/javacpp/windows-x86_64/api-ms-win-crt-utility-l1-1-0.dll'
 
     }
     sourceSets {
         main {
-            jni.srcDirs = []
+//            jni.srcDirs = []
             jniLibs.srcDirs = ['libs']
         }
     }
 
+    buildToolsVersion '26.0.2'
 }
 
 allprojects {
@@ -134,8 +143,8 @@ dependencies {
     compile 'com.qiniu.pili:pili-android-qos:0.8.+'
     implementation files('libs/pldroid-media-streaming-2.3.0.jar')
     implementation 'org.litepal.android:java:3.0.0'
-
     //ftp需要的jar包
-    compile group: 'commons-net', name: 'commons-net', version: '3.6'
-
+    compile 'commons-net:commons-net:3.6'
+    compile 'com.aliyun.dpa:oss-android-sdk:2.9.2'
+    implementation files('libs/BASE64Encoder.jar')
 }

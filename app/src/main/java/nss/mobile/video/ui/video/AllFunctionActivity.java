@@ -43,7 +43,6 @@ public class AllFunctionActivity extends BaseActivity implements BaseQuickAdapte
         rv.setAdapter(functionAdapter);
 
         functionAdapter.setOnItemClickListener(this);
-
     }
 
     private void createMenu() {
@@ -51,6 +50,7 @@ public class AllFunctionActivity extends BaseActivity implements BaseQuickAdapte
         list.add(new FunctionAdapter.NormalFunction("ftp服务器设置", R.drawable.icon_setting, 4));
         list.add(new FunctionAdapter.NormalFunction("文件查看", R.drawable.icon_video_file, 1));
         list.add(new FunctionAdapter.NormalFunction("视频直播", R.drawable.icon_video_file, 2));
+        list.add(new FunctionAdapter.NormalFunction("阿里云上传", R.drawable.icon_video_file, 5));
 
     }
 
@@ -70,6 +70,9 @@ public class AllFunctionActivity extends BaseActivity implements BaseQuickAdapte
                 break;
             case 4:
                 startActivity(FtpSettingActivity.class);
+                break;
+            case 5:
+                startActivity(AliFileActivity.class);
                 break;
         }
     }

@@ -16,15 +16,15 @@
 
 package nss.mobile.video.video;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
 import android.os.Environment;
-import android.telephony.TelephonyManager;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import nss.mobile.video.MyApp;
+import nss.mobile.video.utils.FileMeoryUtils;
 
 public class VideoFile {
 
@@ -51,12 +51,24 @@ public class VideoFile {
     }
 
     public File getFile() {
+
+        File[] externalFilesDirs = MyApp.getInstance().getExternalFilesDirs("");
+        File s = null;
+        if (externalFilesDirs.length >= 2) {
+            s = externalFilesDirs[1];
+            return new File(s, generateFilename());
+        }
+
         final String filename = generateFilename();
         if (filename.contains(DIRECTORY_SEPARATOR)) return new File(filename);
+        File sdPath0 = FileMeoryUtils.getSDPath();
 
-        final File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
-        path.mkdirs();
-        return new File(path, generateFilename());
+        File dir = new File(sdPath0, Environment.DIRECTORY_MOVIES);
+        dir.mkdirs();
+
+        return new File(dir, generateFilename());
+
+
     }
 
     private String generateFilename() {
@@ -74,7 +86,14 @@ public class VideoFile {
     }
 
     public static File baseFile() {
-        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+        File[] externalFilesDir = MyApp.getInstance().getExternalFilesDirs("");
+        if (externalFilesDir.length > 1)
+            return externalFilesDir[1];
+        File sdPath = FileMeoryUtils.getSDPath();
+        if (sdPath == null) {
+            return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+        }
+        return new File(sdPath, Environment.DIRECTORY_MOVIES);
     }
 
     private Date getDate() {

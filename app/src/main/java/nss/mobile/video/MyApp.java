@@ -1,5 +1,7 @@
 package nss.mobile.video;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.support.multidex.MultiDex;
 import android.util.DisplayMetrics;
 
@@ -9,6 +11,7 @@ import org.litepal.LitePalApplication;
 
 import nss.mobile.video.bean.MemoryBean;
 import nss.mobile.video.event.FileMemoryEvent;
+import nss.mobile.video.http.ali.AliApiHelper;
 import nss.mobile.video.utils.FileMeoryUtils;
 
 
@@ -32,13 +35,22 @@ public class MyApp extends LitePalApplication {
         super.onCreate();
         MultiDex.install(this);
         instance = this;
-//        StreamingEnv.init(getApplicationContext());
+        StreamingEnv.init(getApplicationContext());
         //OkHttpInfo.initOkHttpCard(this);
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         C.SCREEN_WIDTH = displayMetrics.widthPixels;
         C.SCREEN_HEIGHT = displayMetrics.heightPixels;
         C.SCREEN_HEIGHT_3 = (int) (C.SCREEN_WIDTH * 3.0f / 4);
         C.SCREEN_HEIGHT_9 = (int) (C.SCREEN_WIDTH * 9.0f / 16);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Looper.prepare();
+                C.sTHandler = new Handler();
+                Looper.loop();
+            }
+        }).start();
 
     }
 

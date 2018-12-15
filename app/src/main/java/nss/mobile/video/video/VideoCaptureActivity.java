@@ -23,6 +23,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore.Video.Thumbnails;
 import android.view.Display;
+import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -96,6 +97,20 @@ public class VideoCaptureActivity extends BaseActivity implements RecordingButto
         super.initWidget();
         initializeRecordingUI();
         FileMemoryEvent.getInstance().register(this);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_CAMERA) {
+            try {
+                mVideoRecorder.toggleRecording();
+            } catch (AlreadyUsedException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+
     }
 
     /**

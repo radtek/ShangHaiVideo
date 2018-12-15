@@ -33,6 +33,9 @@ ext {
     sdkVersion = 26
     buildToolsVersion = '26.0.2'
     supportLibVersion = '26.0.0'
+//    sdkVersion = 20
+//    buildToolsVersion = '20.2.1'
+//    supportLibVersion = '20.0.0'
 }
 
 

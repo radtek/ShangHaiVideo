@@ -21,8 +21,10 @@ import android.media.MediaRecorder;
 import android.media.MediaRecorder.OnInfoListener;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
+import nss.mobile.video.utils.ActivityUtils;
 import nss.mobile.video.video.CLog;
 import nss.mobile.video.video.VideoFile;
 import nss.mobile.video.video.camera.CameraWrapper;
@@ -37,7 +39,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
-
+    private static final String TAG = "VideoRecorder";
     private CameraWrapper mCameraWrapper;
     private CapturePreview mVideoCapturePreview;
 
@@ -69,6 +71,7 @@ public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
             mCameraWrapper.openCamera(useFrontFacingCamera);
         } catch (final OpenCameraException e) {
             e.printStackTrace();
+            ActivityUtils.quit();
             mRecorderInterface.onRecordingFailed(e.getMessage());
             return;
         }
@@ -154,10 +157,13 @@ public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
         recorder.setProfile(baseProfile);
         recorder.setMaxDuration(mCaptureConfiguration.getMaxCaptureDuration());
          nowSaveFile = mVideoFile.getFile();
-        recorder.setOutputFile(nowSaveFile);
+//        recorder.setOutputFile(nowSaveFile);
+        Log.i(TAG, "configureMediaRecorder: " + nowSaveFile.getAbsolutePath());
+        recorder.setOutputFile(nowSaveFile.getAbsolutePath());
         int rotationCorrection = mCameraWrapper.getRotationCorrection();
 //        int rotationCorrection = mCameraWrapper.getRotationCorrectionF();
-        recorder.setOrientationHint(rotationCorrection);
+        // TODO: 2018/12/11  rotationCorrection
+        recorder.setOrientationHint(0);
         recorder.setVideoFrameRate(mCaptureConfiguration.getVideoFPS());
         try {
             recorder.setMaxFileSize(mCaptureConfiguration.getMaxCaptureFileSize());

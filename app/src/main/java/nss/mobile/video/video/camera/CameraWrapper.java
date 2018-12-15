@@ -127,7 +127,8 @@ public class CameraWrapper {
         params.setPreviewSize(previewSize.getWidth(), previewSize.getHeight());
         params.setPreviewFormat(ImageFormat.NV21);
         mNativeCamera.updateNativeCameraParameters(params);
-        mNativeCamera.setDisplayOrientation(getRotationCorrection());
+        // TODO: 2018/12/11 修改   getRotationCorrection();
+        mNativeCamera.setDisplayOrientation(0);
         CLog.d(CLog.CAMERA, "Preview size: " + previewSize.getWidth() + "x" + previewSize.getHeight());
     }
 

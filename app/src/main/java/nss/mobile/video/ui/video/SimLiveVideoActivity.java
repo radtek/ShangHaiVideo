@@ -67,6 +67,7 @@ public class SimLiveVideoActivity extends BaseActivity implements CameraPreviewF
         AspectFrameLayout afl = (AspectFrameLayout) findViewById(R.id.cameraPreview_afl);
         afl.setShowMode(AspectFrameLayout.SHOW_MODE.REAL);
         CameraPreviewFrameView cameraPreviewFrameView =
+
                 (CameraPreviewFrameView) findViewById(R.id.cameraPreview_surfaceView);
         cameraPreviewFrameView.setListener(this);
         String publishurl = "rtmp://pili-publish.push.expresscourts.com/expresscourt/hello";

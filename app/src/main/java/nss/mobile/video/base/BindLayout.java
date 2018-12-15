@@ -39,7 +39,7 @@ public @interface BindLayout {
      *
      * @return
      */
-    @DrawableRes int backRes() default R.drawable.qmui_icon_topbar_back;
+    @DrawableRes int backRes() default R.drawable.icon_back;
 
     @IdRes int topbarId() default R.id.topbar;
 

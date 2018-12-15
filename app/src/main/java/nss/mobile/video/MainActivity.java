@@ -144,10 +144,10 @@ public class MainActivity extends BaseActivity {
 
     public void openVideo(View v) {
 
-        if (true) {
-            startActivity(HomeActivity.class);
-            return;
-        }
+//        if (true) {
+//            startActivity(HomeActivity.class);
+//            return;
+//        }
         TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         @SuppressLint("MissingPermission") String imei = telephonyManager.getDeviceId();
         VideoFile.DEFAULT_PREFIX = imei + "_";

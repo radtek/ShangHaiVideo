@@ -143,6 +143,19 @@ public class FileMeoryUtils {
     }
 
     /**
+     * 获得SD卡总大小
+     *
+     * @return
+     */
+    public static String getFileSizeUnit(Context context, String file) {
+        StatFs stat = new StatFs(file);
+        long blockSize = stat.getBlockSize();
+        long totalBlocks = stat.getBlockCount();
+//        return blockSize * totalBlocks;
+        return Formatter.formatFileSize(context, blockSize * totalBlocks);
+    }
+
+    /**
      * 获得sd卡剩余容量，即可用大小
      *
      * @return

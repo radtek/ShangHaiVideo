@@ -121,6 +121,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         startActivity(dialIntent);
     }
 
+
     @Override
     protected void onResume() {
         super.onResume();

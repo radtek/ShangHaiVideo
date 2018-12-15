@@ -12,9 +12,10 @@ import com.google.gson.Gson;
 
 public class C {
     public static final Handler sHandler = new Handler(Looper.getMainLooper());
+    public static Handler sTHandler;//子线程thread;
 
 
-    public static final Gson sGson = new Gson();
+    //    public static final Gson sGson = new Gson();
     public static final int NORMAL_PAGE_NUM = 1;
     /**
      * 屏幕宽度
@@ -33,7 +34,7 @@ public class C {
 
     public static String DEV_CODE = "devCode";
 
-    public static class File{
+    public static class File {
         public static int error_power_0 = 1; //警告等级
         public static int error_power_1 = 10;
     }

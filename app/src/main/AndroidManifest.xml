@@ -102,7 +102,14 @@
         <activity
             android:name=".ui.video.FtpSettingActivity"
             android:configChanges="orientation|keyboardHidden|screenSize" />
-        <activity android:name=".ui.HomeActivity"></activity>
+        <activity android:name=".ui.HomeActivity" />
+
+        <service
+            android:name=".service.ali.AliUploadFileService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity android:name=".ui.video.AliFileActivity"></activity>
     </application>
 
 </manifest>
