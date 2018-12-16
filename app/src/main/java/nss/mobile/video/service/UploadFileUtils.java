@@ -18,4 +18,8 @@ public class UploadFileUtils {
         final String dateStamp = new SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).format(System.currentTimeMillis());
         return "/" + dateStamp + "/" + MOBILE_ID + "/" + fileName;
     }
+
+    public static void setmobileId(String mi) {
+        MOBILE_ID = mi;
+    }
 }

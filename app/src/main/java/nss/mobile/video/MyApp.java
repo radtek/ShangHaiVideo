@@ -1,18 +1,40 @@
 package nss.mobile.video;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.location.Location;
+import android.location.LocationManager;
+import android.os.BatteryManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.multidex.MultiDex;
+import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 
 import com.qiniu.pili.droid.streaming.StreamingEnv;
+import com.qmuiteam.qmui.util.QMUIDisplayHelper;
+import com.qmuiteam.qmui.util.QMUIPackageHelper;
+import com.zhy.http.okhttp.OkHttpUtils;
+import com.zhy.http.okhttp.callback.StringCallback;
 
 import org.litepal.LitePalApplication;
 
+import java.lang.annotation.Retention;
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
+
 import nss.mobile.video.bean.MemoryBean;
+import nss.mobile.video.bean.MobileKeyBean;
 import nss.mobile.video.event.FileMemoryEvent;
 import nss.mobile.video.http.ali.AliApiHelper;
 import nss.mobile.video.utils.FileMeoryUtils;
+import nss.mobile.video.utils.JsonUtils;
+import nss.mobile.video.utils.LocationUtils;
+import nss.mobile.video.utils.UnitHelper;
+import okhttp3.Call;
 
 
 /**
@@ -52,6 +74,13 @@ public class MyApp extends LitePalApplication {
             }
         }).start();
 
+        MobileKeyBean last = MobileKeyBean.getLast();
+        if (last == null) {
+            MobileKeyBean.saveNormalKey(this);
+        }
+
+        C.sTHandler.post(new SendStatusRunnable());
+
     }
 
     public void startCaseFileMemoryThread() {
@@ -71,26 +100,11 @@ public class MyApp extends LitePalApplication {
     }
 
     public static class CaseFileMemorySizeThread implements Runnable {
-        private MemoryBean memoryBean = new MemoryBean();
 
         @Override
         public void run() {
-            String extendedMemoryPath = FileMeoryUtils.getExtendedMemoryPath(getContext());
-            if (extendedMemoryPath == null) {
-                long availableInternalMemorySize = FileMeoryUtils.getAvailableInternalMemorySize();
-                long totalInternalMemorySize = FileMeoryUtils.getTotalInternalMemorySize();
-                memoryBean.setAvailableInternalMemorySize(availableInternalMemorySize);
-                memoryBean.setTotalInternalMemorySize(totalInternalMemorySize);
-                FileMemoryEvent.getInstance().postMemoryEvent(memoryBean);
-                C.sHandler.postDelayed(this, 1_000);
-                return;
-            }
 
-
-            long sdTotalSize = FileMeoryUtils.getSDTotalSize(extendedMemoryPath);
-            long sdMomery = FileMeoryUtils.getSDAvailableSize(extendedMemoryPath);
-            memoryBean.setAvailableInternalMemorySize(sdMomery);
-            memoryBean.setTotalInternalMemorySize(sdTotalSize);
+            MemoryBean memoryBean = getSDMemoery();
             FileMemoryEvent.getInstance().postMemoryEvent(memoryBean);
             C.sHandler.postDelayed(this, 1_000);
         }
@@ -98,5 +112,87 @@ public class MyApp extends LitePalApplication {
 
     }
 
+    public static MemoryBean getSDMemoery() {
+        String extendedMemoryPath = FileMeoryUtils.getExtendedMemoryPath(getContext());
+        MemoryBean memoryBean = new MemoryBean();
+        if (extendedMemoryPath == null) {
+            long availableInternalMemorySize = FileMeoryUtils.getAvailableInternalMemorySize();
+            long totalInternalMemorySize = FileMeoryUtils.getTotalInternalMemorySize();
+            memoryBean.setAvailableInternalMemorySize(availableInternalMemorySize);
+            memoryBean.setTotalInternalMemorySize(totalInternalMemorySize);
+        } else {
+            long sdTotalSize = FileMeoryUtils.getSDTotalSize(extendedMemoryPath);
+            long sdMomery = FileMeoryUtils.getSDAvailableSize(extendedMemoryPath);
+            memoryBean.setAvailableInternalMemorySize(sdMomery);
+            memoryBean.setTotalInternalMemorySize(sdTotalSize);
+        }
+        return memoryBean;
+    }
+
+    public static class SendStatusRunnable implements Runnable {
+        Map<String, String> params = new HashMap<>();
+        int delayMillis = 5 * 60 * 1000;
+        StringCallback callback = new StringCallback() {
+            @Override
+            public void onError(Call call, Exception e, int id) {
+
+            }
+
+            @Override
+            public void onResponse(String response, int id, int code) {
+
+            }
+        };
+
+        @Override
+        public void run() {
+            if (!QMUIDisplayHelper.hasInternet(MyApp.getInstance())) {
+                return;
+            }
+
+            resetParams();
+
+            OkHttpUtils.post().url("http://nss.justice.org.cn/notary_test/api/mobile-status")
+                    .params(params)
+                    .build()
+                    .execute(callback);
+
+            C.sTHandler.postDelayed(this, delayMillis);
+        }
+
+        private void resetParams() {
+            params.clear();
+
+            MemoryBean memoryBean = getSDMemoery();
+            params.put("mId", MobileKeyBean.getLast().getMobileKey());
+            params.put("mEle", String.valueOf(MyApp.getInstance().getBatteryMemory()));
+            params.put("mMemoryTotal", UnitHelper.formatterFileSize(memoryBean.getTotalInternalMemorySize()));
+            params.put("mMemory", UnitHelper.formatterFileSize(memoryBean.getAvailableInternalMemorySize()));
+            params.put("mVStatus", "在线");
+            params.put("lastConnectDate", String.valueOf(System.currentTimeMillis()));
+            Location location = MyApp.getInstance().getLocation();
+            if (location != null) {
+                params.put("longitude", String.valueOf(location.getLongitude()));
+                params.put("latitude", String.valueOf(location.getLatitude()));
+            }
+
+        }
+    }
+
+    public int getBatteryMemory() {
+        IntentFilter filter2 = new IntentFilter();
+        filter2.addAction(Intent.ACTION_BATTERY_CHANGED);
+        Intent intent = registerReceiver(null, filter2);
+        int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+        int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+
+        int batteryPct = level * 100 / scale;
+        return batteryPct;
+    }
+
+
+    public Location getLocation() {
+        return LocationUtils.beginLocatioon(this);
+    }
 
 }

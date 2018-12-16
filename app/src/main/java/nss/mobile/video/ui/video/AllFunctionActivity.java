@@ -14,6 +14,7 @@ import nss.mobile.video.R;
 import nss.mobile.video.base.BaseActivity;
 import nss.mobile.video.base.BindLayout;
 import nss.mobile.video.base.bind.BindView;
+import nss.mobile.video.ui.OnlyKeySettingActivity;
 import nss.mobile.video.ui.adapter.FunctionAdapter;
 import nss.mobile.video.ui.adapter.ITag;
 
@@ -51,6 +52,7 @@ public class AllFunctionActivity extends BaseActivity implements BaseQuickAdapte
         list.add(new FunctionAdapter.NormalFunction("文件查看", R.drawable.icon_video_file, 1));
         list.add(new FunctionAdapter.NormalFunction("视频直播", R.drawable.icon_video_file, 2));
         list.add(new FunctionAdapter.NormalFunction("阿里云上传", R.drawable.icon_video_file, 5));
+        list.add(new FunctionAdapter.NormalFunction("设备ID设置", R.drawable.icon_video_file, 6));
 
     }
 
@@ -73,6 +75,9 @@ public class AllFunctionActivity extends BaseActivity implements BaseQuickAdapte
                 break;
             case 5:
                 startActivity(AliFileActivity.class);
+                break;
+            case 6:
+                startActivity(OnlyKeySettingActivity.class);
                 break;
         }
     }

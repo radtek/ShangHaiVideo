@@ -8,26 +8,43 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 
+import com.qmuiteam.qmui.util.QMUIPackageHelper;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
+import com.zhy.http.okhttp.OkHttpUtils;
+import com.zhy.http.okhttp.callback.FileCallBack;
+import com.zhy.http.okhttp.callback.StringCallback;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import nss.mobile.video.base.BaseActivity;
 import nss.mobile.video.base.BindLayout;
+import nss.mobile.video.bean.MobileKeyBean;
 import nss.mobile.video.service.UploadFileUtils;
 import nss.mobile.video.ui.HomeActivity;
+import nss.mobile.video.utils.FileMeoryUtils;
+import nss.mobile.video.utils.JsonUtils;
 import nss.mobile.video.video.VideoCaptureActivity;
 import nss.mobile.video.video.VideoFile;
 import nss.mobile.video.video.configuration.CaptureConfiguration;
 import nss.mobile.video.video.configuration.PredefinedCaptureConfigurations;
+import okhttp3.Call;
 
 
 @BindLayout(layoutRes = R.layout.activity_main, bindTopBar = false)
@@ -144,14 +161,109 @@ public class MainActivity extends BaseActivity {
 
     public void openVideo(View v) {
 
+        OkHttpUtils.get()
+                .addParams("mbox-code","0021-0000DF-YDQZZD-000001")
+                .url("http://nss.justice.org.cn/notary_test/api/get-setting")
+                .build()
+                .execute(new StringCallback() {
+
+                    @Override
+                    public void onError(Call call, Exception e, int id) {
+                        toAty();
+                    }
+
+                    @Override
+                    public void onResponse(String response, int id, int code) {
+                        Map<String, Object> map = JsonUtils.fromTypeJson(response, Map.class);
+                        String version = (String) map.get("version");
+                        final String uploadUrl = (String) map.get("update-url");
+                        String appVersion = QMUIPackageHelper.getAppVersion(MyApp.getInstance());
+                        if (appVersion.equals(version)) {
+                            toAty();
+                            return;
+                        }
+                        QMUIDialog dialog = new QMUIDialog.MessageDialogBuilder(MainActivity.this)
+                                .setMessage("当前版本号:" + appVersion + ",最新版本:" + version + ",是否需要更新?")
+                                .setTitle("更新")
+                                .addAction("暂不更新", new QMUIDialogAction.ActionListener() {
+                                    @Override
+                                    public void onClick(QMUIDialog dialog, int index) {
+                                        dialog.cancel();
+                                        toAty();
+                                    }
+                                })
+                                .addAction("更新", new QMUIDialogAction.ActionListener() {
+                                    @Override
+                                    public void onClick(QMUIDialog dialog, int index) {
+                                        displayLoadingDialog("加载数据中");
+                                        File sdPath = FileMeoryUtils.getSDPath();
+                                        File dirPath = new File(sdPath, "download");
+                                        dirPath.mkdirs();
+                                        File appPath = new File(dirPath, "app" + System.currentTimeMillis() + ".apk");
+                                        if (appPath.exists()) {
+                                            appPath.delete();
+                                        }
+                                        try {
+                                            if (appPath.createNewFile()) {
+                                                OkHttpUtils.get().url(uploadUrl)
+                                                        .build().execute(new FileCallBack(sdPath.getAbsolutePath(), appPath.getName()) {
+                                                    @Override
+                                                    public void onError(Call call, Exception e, int id) {
+                                                        toast("下载失败");
+                                                        toAty();
+                                                    }
+
+                                                    @Override
+                                                    public void onResponse(File response, int id, int code) {
+                                                        install(response.getAbsolutePath());
+                                                    }
+
+                                                    @Override
+                                                    public void onAfter(int id) {
+                                                        super.onAfter(id);
+                                                        cancelLoadingDialog();
+                                                    }
+                                                });
+                                            }
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                            cancelLoadingDialog();
+                                            toast("创建文件失败，无法下载");
+                                            toAty();
+                                        }
+
+                                        dialog.cancel();
+                                    }
+                                }).show();
+                        dialog.setCancelable(false);
+                    }
+                });
 //        if (true) {
 //            startActivity(HomeActivity.class);
 //            return;
 //        }
-        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        @SuppressLint("MissingPermission") String imei = telephonyManager.getDeviceId();
-        VideoFile.DEFAULT_PREFIX = imei + "_";
-        UploadFileUtils.MOBILE_ID = imei;
+        toAty();
+    }
+
+    private void install(String filePath) {
+        File apkFile = new File(filePath);
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Uri contentUri = FileProvider.getUriForFile(
+                    this
+                    , "你的包名.fileprovider"
+                    , apkFile);
+            intent.setDataAndType(contentUri, "application/vnd.android.package-archive");
+        } else {
+            intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
+        }
+        startActivity(intent);
+    }
+
+    private void toAty() {
+        UploadFileUtils.setmobileId(MobileKeyBean.getLast().getMobileKey() + "_");
         // TODO: 2018/11/4
         final CaptureConfiguration config = createCaptureConfiguration();
 

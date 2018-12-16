@@ -11,7 +11,7 @@
 			For example:
     	<version value="1" />
     -->
-    <version value="7" />
+    <version value="8" />
 
     <!--
     	Define your models in the list with mapping tag, LitePal will
@@ -27,6 +27,7 @@
         <mapping class="nss.mobile.video.bean.db.UploadFile"></mapping>
         <mapping class="nss.mobile.video.bean.db.FtpIp"></mapping>
         <mapping class="nss.mobile.video.bean.AliFileBean"></mapping>
+        <mapping class="nss.mobile.video.bean.MobileKeyBean"></mapping>
     </list>
 
     <!--
