@@ -146,6 +146,7 @@ public class MyApp extends LitePalApplication {
 
         @Override
         public void run() {
+            C.sTHandler.postDelayed(this, delayMillis);
             if (!QMUIDisplayHelper.hasInternet(MyApp.getInstance())) {
                 return;
             }
@@ -157,7 +158,7 @@ public class MyApp extends LitePalApplication {
                     .build()
                     .execute(callback);
 
-            C.sTHandler.postDelayed(this, delayMillis);
+
         }
 
         private void resetParams() {
@@ -192,7 +193,7 @@ public class MyApp extends LitePalApplication {
 
 
     public Location getLocation() {
-        return LocationUtils.beginLocatioon(this);
+        return LocationUtils.getLngAndLatWithNetwork(this);
     }
 
 }

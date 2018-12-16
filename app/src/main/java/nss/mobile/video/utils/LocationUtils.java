@@ -1,6 +1,7 @@
 package nss.mobile.video.utils;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -44,5 +45,12 @@ public class LocationUtils {
             return locationManager.getLastKnownLocation(provider);
         }
         return null;
+    }
+
+    //从网络获取经纬度
+    public static Location getLngAndLatWithNetwork(Context context) {
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        @SuppressLint("MissingPermission") Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        return location;
     }
 }
