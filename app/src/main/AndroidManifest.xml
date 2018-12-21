@@ -38,7 +38,6 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
     <uses-feature android:name="android.hardware.camera.autofocus" />
-
     <uses-feature
         android:glEsVersion="0x00020000"
         android:required="true" />
@@ -61,7 +60,7 @@
         </activity>
         <activity
             android:name=".zxing.activity.CaptureActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="landscape" />
         <activity
             android:name=".video.VideoCaptureActivity"
             android:screenOrientation="landscape" />
@@ -111,7 +110,8 @@
             android:exported="true" />
 
         <activity android:name=".ui.video.AliFileActivity" />
-        <activity android:name=".ui.OnlyKeySettingActivity"></activity>
+        <activity android:name=".ui.OnlyKeySettingActivity" />
+        <activity android:name=".ui.SnActivity"></activity>
     </application>
 
 </manifest>

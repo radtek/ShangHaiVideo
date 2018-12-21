@@ -732,7 +732,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
 
     @Override
     public void toast(CharSequence msg) {
-
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT);
     }
 }
 

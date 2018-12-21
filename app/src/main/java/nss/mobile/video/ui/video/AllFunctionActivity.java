@@ -1,5 +1,6 @@
 package nss.mobile.video.ui.video;
 
+import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -17,6 +18,9 @@ import nss.mobile.video.base.bind.BindView;
 import nss.mobile.video.ui.OnlyKeySettingActivity;
 import nss.mobile.video.ui.adapter.FunctionAdapter;
 import nss.mobile.video.ui.adapter.ITag;
+import nss.mobile.video.utils.preferences.QualityPreferences;
+import nss.mobile.video.video.QualitySelectActivity;
+import nss.mobile.video.video.configuration.CaptureConfiguration;
 
 @BindLayout(layoutRes = R.layout.activity_all_function, title = "功能选择")
 public class AllFunctionActivity extends BaseActivity implements BaseQuickAdapter.OnItemClickListener {
@@ -51,7 +55,7 @@ public class AllFunctionActivity extends BaseActivity implements BaseQuickAdapte
         list.add(new FunctionAdapter.NormalFunction("ftp服务器设置", R.drawable.icon_setting, 4));
         list.add(new FunctionAdapter.NormalFunction("文件查看", R.drawable.icon_video_file, 1));
         list.add(new FunctionAdapter.NormalFunction("视频直播", R.drawable.icon_video_file, 2));
-        list.add(new FunctionAdapter.NormalFunction("阿里云上传", R.drawable.icon_video_file, 5));
+        list.add(new FunctionAdapter.NormalFunction("录像分辨率调整", R.drawable.icon_video_file, 5));
         list.add(new FunctionAdapter.NormalFunction("设备ID设置", R.drawable.icon_video_file, 6));
 
     }
@@ -74,7 +78,10 @@ public class AllFunctionActivity extends BaseActivity implements BaseQuickAdapte
                 startActivity(FtpSettingActivity.class);
                 break;
             case 5:
-                startActivity(AliFileActivity.class);
+                Bundle bundle = new Bundle();
+                CaptureConfiguration returnConfiguration = QualityPreferences.getConfiguration();
+                QualitySelectActivity.put(returnConfiguration, bundle);
+                startActivity(QualitySelectActivity.class, bundle);
                 break;
             case 6:
                 startActivity(OnlyKeySettingActivity.class);

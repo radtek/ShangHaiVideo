@@ -39,6 +39,7 @@ import nss.mobile.video.base.BindLayout;
 import nss.mobile.video.base.bind.BindView;
 import nss.mobile.video.bean.MemoryBean;
 import nss.mobile.video.event.FileMemoryEvent;
+import nss.mobile.video.ui.video.AliFileActivity;
 import nss.mobile.video.ui.video.AllFunctionActivity;
 import nss.mobile.video.ui.wifi.WifiManagerActivity;
 import nss.mobile.video.utils.UnitHelper;
@@ -243,9 +244,9 @@ public class VideoCaptureActivity extends BaseActivity implements RecordingButto
 
     @Override
     public void onQualityButtonClick() {
-        Bundle bundle = new Bundle();
-        QualitySelectActivity.put(mCaptureConfiguration, bundle);
-        startActivity(QualitySelectActivity.class, bundle);
+
+        startActivity(AliFileActivity.class);
+
     }
 
 

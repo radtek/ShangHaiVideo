@@ -1,37 +1,30 @@
 package nss.mobile.video;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.BatteryManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.multidex.MultiDex;
-import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 
 import com.qiniu.pili.droid.streaming.StreamingEnv;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
-import com.qmuiteam.qmui.util.QMUIPackageHelper;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
 import org.litepal.LitePalApplication;
 
-import java.lang.annotation.Retention;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
 import nss.mobile.video.bean.MemoryBean;
 import nss.mobile.video.bean.MobileKeyBean;
 import nss.mobile.video.event.FileMemoryEvent;
-import nss.mobile.video.http.ali.AliApiHelper;
+import nss.mobile.video.http.OkHttpHelper;
+import nss.mobile.video.info.UrlApi;
 import nss.mobile.video.utils.FileMeoryUtils;
-import nss.mobile.video.utils.JsonUtils;
 import nss.mobile.video.utils.LocationUtils;
 import nss.mobile.video.utils.UnitHelper;
 import okhttp3.Call;
@@ -70,16 +63,12 @@ public class MyApp extends LitePalApplication {
             public void run() {
                 Looper.prepare();
                 C.sTHandler = new Handler();
+
                 Looper.loop();
+
             }
         }).start();
 
-        MobileKeyBean last = MobileKeyBean.getLast();
-        if (last == null) {
-            MobileKeyBean.saveNormalKey(this);
-        }
-
-        C.sTHandler.post(new SendStatusRunnable());
 
     }
 
@@ -130,7 +119,7 @@ public class MyApp extends LitePalApplication {
     }
 
     public static class SendStatusRunnable implements Runnable {
-        Map<String, String> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
         int delayMillis = 5 * 60 * 1000;
         StringCallback callback = new StringCallback() {
             @Override
@@ -152,11 +141,7 @@ public class MyApp extends LitePalApplication {
             }
 
             resetParams();
-
-            OkHttpUtils.post().url("http://nss.justice.org.cn/notary_test/api/mobile-status")
-                    .params(params)
-                    .build()
-                    .execute(callback);
+            OkHttpHelper.post(UrlApi.status_submit, params, callback);
 
 
         }
@@ -165,12 +150,12 @@ public class MyApp extends LitePalApplication {
             params.clear();
 
             MemoryBean memoryBean = getSDMemoery();
-            params.put("mId", MobileKeyBean.getLast().getMobileKey());
-            params.put("mEle", String.valueOf(MyApp.getInstance().getBatteryMemory()));
-            params.put("mMemoryTotal", UnitHelper.formatterFileSize(memoryBean.getTotalInternalMemorySize()));
-            params.put("mMemory", UnitHelper.formatterFileSize(memoryBean.getAvailableInternalMemorySize()));
-            params.put("mVStatus", "在线");
-            params.put("lastConnectDate", String.valueOf(System.currentTimeMillis()));
+            params.put("box-code", MobileKeyBean.getLast().getMobileKey());
+            params.put("battery", MyApp.getInstance().getBatteryMemory());
+            params.put("total-space", memoryBean.getTotalInternalMemorySize());
+            params.put("available",memoryBean.getAvailableInternalMemorySize());
+            params.put("status", "在线");
+            params.put("time", System.currentTimeMillis());
             Location location = MyApp.getInstance().getLocation();
             if (location != null) {
                 params.put("longitude", String.valueOf(location.getLongitude()));

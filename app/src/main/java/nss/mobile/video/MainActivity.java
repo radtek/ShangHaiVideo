@@ -161,6 +161,10 @@ public class MainActivity extends BaseActivity {
 
 
     public void openVideo(View v) {
+        MobileKeyBean last = MobileKeyBean.getLast();
+        if (last == null) {
+            MobileKeyBean.saveNormalKey(this);
+        }
 
         OkHttpUtils.get()
                 .addParams("mbox-code","0021-0000DF-YDQZZD-000001")
@@ -243,7 +247,7 @@ public class MainActivity extends BaseActivity {
 //            startActivity(HomeActivity.class);
 //            return;
 //        }
-        toAty();
+//        toAty();
     }
 
     private void install(String filePath) {
@@ -264,7 +268,8 @@ public class MainActivity extends BaseActivity {
     }
 
     private void toAty() {
-        UploadFileUtils.setmobileId(MobileKeyBean.getLast().getMobileKey() + "_");
+        C.sTHandler.post(new MyApp.SendStatusRunnable());
+        UploadFileUtils.setmobileId(MobileKeyBean.getLast().getMobileKey() );
         // TODO: 2018/11/4
         final CaptureConfiguration config = createCaptureConfiguration();
 

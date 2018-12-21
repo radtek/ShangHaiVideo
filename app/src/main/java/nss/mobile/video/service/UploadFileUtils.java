@@ -3,6 +3,8 @@ package nss.mobile.video.service;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
+import nss.mobile.video.video.VideoFile;
+
 /**
  * 描述：
  * 邮箱 email:strive_bug@yeah.net
@@ -20,6 +22,7 @@ public class UploadFileUtils {
     }
 
     public static void setmobileId(String mi) {
+        VideoFile.DEFAULT_PREFIX = mi + "_";
         MOBILE_ID = mi;
     }
 }

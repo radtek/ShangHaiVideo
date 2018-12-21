@@ -1,5 +1,6 @@
 package nss.mobile.video.http.ali;
 
+import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
 import java.io.IOException;
@@ -66,32 +67,34 @@ public class AliApiHelper {
         out(getUrl);
 
         headers.put("Host", "vod.cn-shanghai.aliyuncs.com");
-        OkHttpHeader.HeaderSetting.setHeaderMap(headers);
         final OnLoadAliOssTokenListener fl = l;
+        OkHttpUtils.get()
+                .url(getUrl)
+                .headers(headers)
+                .build()
+                .execute(new StringCallback() {
+                    @Override
+                    public void onError(Call call, Exception e, int id) {
+                        out(e.getMessage());
+                        fl.onAliOssFailed(e, "获得ali云token异常");
+                    }
 
-        OkHttpHeader.get(getUrl, new StringCallback() {
-            @Override
-            public void onError(Call call, Exception e, int id) {
-                out(e.getMessage());
-                fl.onAliOssFailed(e, "获得ali云token异常");
-            }
-
-            @Override
-            public void onResponse(String response, int id, int code) {
-                out(response);
-                try {
-                    AliOssToken aliOssToken = JsonUtils.fromJson(response, AliOssToken.class);
-                    String uploadAddressJson = getFromBASE64(aliOssToken.getUploadAddress());
-                    UploadAddress uploadAddress = JsonUtils.fromJson(uploadAddressJson, UploadAddress.class);
-                    String uploadAuthJson = getFromBASE64(aliOssToken.getUploadAuth());
-                    UploadAuth uploadAuth = JsonUtils.fromJson(uploadAuthJson, UploadAuth.class);
-                    fl.onAliOssLoad(aliOssToken,uploadAddress, uploadAuth);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    fl.onAliOssFailed(e, "数据解析异常");
-                }
-            }
-        });
+                    @Override
+                    public void onResponse(String response, int id, int code) {
+                        out(response);
+                        try {
+                            AliOssToken aliOssToken = JsonUtils.fromJson(response, AliOssToken.class);
+                            String uploadAddressJson = getFromBASE64(aliOssToken.getUploadAddress());
+                            UploadAddress uploadAddress = JsonUtils.fromJson(uploadAddressJson, UploadAddress.class);
+                            String uploadAuthJson = getFromBASE64(aliOssToken.getUploadAuth());
+                            UploadAuth uploadAuth = JsonUtils.fromJson(uploadAuthJson, UploadAuth.class);
+                            fl.onAliOssLoad(aliOssToken, uploadAddress, uploadAuth);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            fl.onAliOssFailed(e, "数据解析异常");
+                        }
+                    }
+                });
         //发送HTTP GET 请求
 //        httpGet(URL);
     }
@@ -109,28 +112,77 @@ public class AliApiHelper {
         out(getUrl);
 
         headers.put("Host", "vod.cn-shanghai.aliyuncs.com");
-        OkHttpHeader.HeaderSetting.setHeaderMap(headers);
+
         final OnLoadAliVideoDetailsListener fl = l;
+        OkHttpUtils.get().url(getUrl)
+                .headers(headers)
+                .build()
+                .execute(new StringCallback() {
+                    @Override
+                    public void onError(Call call, Exception e, int id) {
+                        out(e.getMessage());
+                        fl.onAliVideoFailed(e, "获得ali云token异常");
+                    }
 
-        OkHttpHeader.get(getUrl, new StringCallback() {
-            @Override
-            public void onError(Call call, Exception e, int id) {
-                out(e.getMessage());
-                fl.onAliVideoFailed(e, "获得ali云token异常");
-            }
+                    @Override
+                    public void onResponse(String response, int id, int code) {
+                        out(response);
+                        try {
+                            AliVideoDetails videoDetails = JsonUtils.fromJson(response, AliVideoDetails.class);
+                            fl.onAliVideoDetails(videoDetails);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            fl.onAliVideoFailed(e, "数据解析异常");
+                        }
+                    }
+                });
+    }
 
-            @Override
-            public void onResponse(String response, int id, int code) {
-                out(response);
-                try {
-                    AliVideoDetails videoDetails = JsonUtils.fromJson(response, AliVideoDetails.class);
-                    fl.onAliVideoDetails(videoDetails);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    fl.onAliVideoFailed(e, "数据解析异常");
-                }
-            }
-        });
+    public static void getVideoPlayUrl(String videoId, OnAliVideoPlayInfoListener l) {
+        //生成私有参数，不同API需要修改
+        /* 接口私有参数列表, 不同API请替换相应参数 */
+        Map<String, String> privateParams = new HashMap<>();
+        // 视频ID
+        privateParams.put("VideoId", videoId);
+        privateParams.put("Formats", "mp4");
+        privateParams.put("StreamType", "video");
+        // API名称
+//        privateParams.put("Action", "CreateUploadVideo");
+        privateParams.put("Action", "GetPlayInfo");
+        //生成公共参数，不需要修改
+        Map<String, String> publicParams = generatePublicParamtersVideoDetails();
+//        Map<String, String> publicParams = new HashMap<>();
+        String value = generateTimestamp();
+        out("date = " + value);
+        //生成OpenAPI地址，不需要修改
+        String getUrl = generateOpenAPIURL(publicParams, privateParams);
+        out(getUrl);
+
+        headers.put("Host", "vod.cn-shanghai.aliyuncs.com");
+        final OnAliVideoPlayInfoListener fl = l;
+        OkHttpUtils.get().headers(headers)
+                .url(getUrl)
+                .build()
+                .execute(new StringCallback() {
+                    @Override
+                    public void onError(Call call, Exception e, int id) {
+                        out(e.getMessage());
+                        fl.onAliVideoPlayFailed(e, "获得ali云token异常");
+                    }
+
+                    @Override
+                    public void onResponse(String response, int id, int code) {
+                        out(response);
+                        try {
+                            AliPlayInfoResult aliPlayInfoResult = JsonUtils.fromJson(response, AliPlayInfoResult.class);
+                            fl.onAliVideoPlaySuccess(aliPlayInfoResult);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            fl.onAliVideoPlayFailed(e, "数据解析异常");
+                        }
+                    }
+                });
+
     }
 
     /**

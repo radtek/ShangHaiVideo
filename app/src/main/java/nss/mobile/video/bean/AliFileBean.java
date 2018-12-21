@@ -31,6 +31,11 @@ public class AliFileBean extends LitePalSupport implements IFile {
     private String fileSize;
 
     private String aliVideoId;
+    private String videVod; //播放地址
+
+
+    private int submitServerStatus;//上传到自有服务器状态 -1失败，0，未上传，1上传成功
+
 
     public static List<AliFileBean> getStatus(String status) {
         return LitePal.where("upstatus = ?", status).find(AliFileBean.class);
@@ -65,6 +70,10 @@ public class AliFileBean extends LitePalSupport implements IFile {
 
     public String getAliVideoId() {
         return aliVideoId;
+    }
+
+    public int getSubmitServerStatus() {
+        return submitServerStatus;
     }
 
     public void setAliVideoId(String aliVideoId) {
@@ -157,4 +166,15 @@ public class AliFileBean extends LitePalSupport implements IFile {
     }
 
 
+    public void setVideVod(String videVod) {
+        this.videVod = videVod;
+    }
+
+    public String getVideVod() {
+        return videVod;
+    }
+
+    public void setSubmitServerStatus(int submitServerStatus) {
+        this.submitServerStatus = submitServerStatus;
+    }
 }

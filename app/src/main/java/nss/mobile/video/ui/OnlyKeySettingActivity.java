@@ -75,7 +75,7 @@ public class OnlyKeySettingActivity extends BaseActivity {
             k.setCreateDate(System.currentTimeMillis());
             k.save();
             UploadFileUtils.setmobileId(key + "_");
-            toast("保存成功");
+            displayMessageDialog("设置成功");
 
         }
     }

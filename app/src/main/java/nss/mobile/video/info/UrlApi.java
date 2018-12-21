@@ -11,8 +11,17 @@ package nss.mobile.video.info;
  */
 public class UrlApi {
 
-    public static final String baseUrl = "http://182.254.145.142:10881";
-//    public static final String baseUrl = "http://192.168.6.111:10881";
+    public static final String baseUrl = "http://nss.justice.org.cn/notary_test";
 
+    //    public static final String baseUrl = "http://192.168.6.111:10881";
+    public static String getUrl() {
+        return baseUrl;
+    }
+
+    //设备状态提交
+    public static String status_submit = baseUrl + "/api/mobile-camera";
+
+    //阿里云上传文件状态
+    public static String file_status_submit = baseUrl + "/api/mobile-video";
 
 }
