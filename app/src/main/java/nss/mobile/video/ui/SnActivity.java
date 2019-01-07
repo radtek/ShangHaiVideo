@@ -28,6 +28,5 @@ public class SnActivity extends BaseActivity {
         mSnTv.setText(last.getMobileKey());
         Bitmap qrCode = EncodingUtils.createQRCode(last.getMobileKey(), 200, 200, null);
         mSnIv.setImageBitmap(qrCode);
-
     }
 }

@@ -30,36 +30,38 @@
     <include layout="@layout/layout_recordingtime" />
 
     <FrameLayout
-        android:visibility="visible"
-        android:background="@drawable/s_error_bg"
         android:id="@+id/videocapture_error_group"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@drawable/s_error_bg"
+        android:visibility="visible">
 
         <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center_horizontal"
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:orientation="vertical">
+
             <TextView
-                android:textColor="@color/text_white_color"
-                android:layout_gravity="center"
-                android:text="内存不足10%"
-                android:gravity="center"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="内存不足10%"
+                android:textColor="@color/text_white_color" />
+
             <TextView
                 android:id="@+id/videocapture_close_error_tv"
+                style="@style/btnNormalRadius"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:paddingBottom="6dp"
-                android:paddingTop="6dp"
-                android:paddingRight="@dimen/activity_horizontal_margin"
                 android:paddingLeft="@dimen/activity_horizontal_margin"
-                style="@style/btnNormalRadius"
-                android:text="不需要显示"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingTop="6dp"
+                android:text="不需要显示" />
         </LinearLayout>
 
     </FrameLayout>
@@ -79,7 +81,8 @@
         android:layout_below="@+id/videocapture_allMenu_iv"
         android:clickable="true"
         android:padding="@dimen/margin_normal"
-        android:src="@drawable/icon_wifi" />
+        android:src="@drawable/icon_wifi"
+        android:visibility="visible" />
 
     <ImageView
         android:id="@+id/videocapture_quality_iv"
@@ -89,6 +92,14 @@
         android:clickable="true"
         android:padding="@dimen/margin_normal"
         android:src="@drawable/icon_video_big" />
+
+    <ImageView
+        android:id="@+id/videocapture_sn_iv"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_below="@+id/videocapture_quality_iv"
+        android:padding="10dp"
+        android:src="@drawable/icon_sn" />
 
     <TextView
         android:id="@+id/videocapture_auto_time_tv"
@@ -171,7 +182,6 @@
             android:layout_height="wrap_content"
             android:text="22222" />
     </LinearLayout>
-
 
 
 </RelativeLayout>

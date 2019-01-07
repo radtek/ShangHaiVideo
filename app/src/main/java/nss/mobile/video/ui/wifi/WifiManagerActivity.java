@@ -75,6 +75,7 @@ public class WifiManagerActivity extends BaseActivity {
             return;
         }
         AccessPoint wifiPoint = createWifiPoint(wifi);
+
         if (wifiPoint == null) {
             mWifiStatusHintTv.setText("获得信息不正确，请重新扫描");
             return;
@@ -97,8 +98,8 @@ public class WifiManagerActivity extends BaseActivity {
         AccessPoint ap = new AccessPoint();
         for (String s : split) {
             String[] split1 = s.split(":");
-            if (split1.length == 0) {
-                return null;
+            if (split1.length < 2) {
+                continue;
             }
             String label = split1[0].toLowerCase();
             String value = split1[1];
@@ -136,7 +137,7 @@ public class WifiManagerActivity extends BaseActivity {
 
         String encryptionType = ap.getEncryptionType();
         String password = ap.getPassword();
-        if (encryptionType.contains("wep")) {
+        if (encryptionType.toLowerCase().equals("wep") || encryptionType.toLowerCase().equals("wap/wpa2")) {
             /**
              * special handling according to password length is a must for wep
              */
@@ -260,6 +261,9 @@ public class WifiManagerActivity extends BaseActivity {
         }
 
         public String getEncryptionType() {
+            if (encryptionType == null) {
+                return "";
+            }
             return encryptionType;
         }
 

@@ -17,7 +17,7 @@ public class QualityPreferences {
     private static final String KEY_RESOLUTION = "keyResolution";
 
     public static CaptureConfiguration getConfiguration() {
-        int i = PreferencesUtils.queryInt(MyApp.getInstance().getApplicationContext(), KEY_QUALITY, 0);
+        int i = PreferencesUtils.queryInt(MyApp.getInstance().getApplicationContext(), KEY_QUALITY, 1);
         PredefinedCaptureConfigurations.CaptureQuality quality;
         switch (i) {
             case 0:
@@ -33,7 +33,7 @@ public class QualityPreferences {
                 quality = PredefinedCaptureConfigurations.CaptureQuality.LOW;
         }
 
-        int r = PreferencesUtils.queryInt(MyApp.getInstance().getApplicationContext(), KEY_RESOLUTION, 0);
+        int r = PreferencesUtils.queryInt(MyApp.getInstance().getApplicationContext(), KEY_RESOLUTION, 2);
         PredefinedCaptureConfigurations.CaptureResolution resolution;
         switch (r) {
             case 0:

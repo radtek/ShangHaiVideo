@@ -163,7 +163,7 @@ public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
         int rotationCorrection = mCameraWrapper.getRotationCorrection();
 //        int rotationCorrection = mCameraWrapper.getRotationCorrectionF();
         // TODO: 2018/12/11  rotationCorrection
-        recorder.setOrientationHint(0);
+        recorder.setOrientationHint(rotationCorrection);
         recorder.setVideoFrameRate(mCaptureConfiguration.getVideoFPS());
         try {
             recorder.setMaxFileSize(mCaptureConfiguration.getMaxCaptureFileSize());

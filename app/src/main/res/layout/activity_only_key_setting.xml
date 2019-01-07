@@ -25,7 +25,8 @@
 
         <EditText
             android:id="@+id/key_setting_key_et"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
             android:gravity="right"
             android:hint="请输入设备ID" />
@@ -58,16 +59,33 @@
             android:gravity="right"
             android:hint="请输入密码" />
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/key_setting_save_action_tv"
-        style="@style/btnNormalRadius"
+    <LinearLayout
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="32dp"
-        android:layout_marginRight="32dp"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:gravity="center"
-        android:text="保存" />
+        android:layout_height="wrap_content">
+        <TextView
+            android:clickable="true"
+            android:id="@+id/key_setting_scanning_action_tv"
+            style="@style/btnDel"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:gravity="center"
+            android:text="扫码输入" />
+        <TextView
+            android:layout_marginLeft="@dimen/activity_vertical_margin"
+            android:layout_weight="1"
+            android:id="@+id/key_setting_save_action_tv"
+            style="@style/btnNormalRadius"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:gravity="center"
+            android:text="保存" />
+    </LinearLayout>
+
 
 </LinearLayout>

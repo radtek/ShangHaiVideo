@@ -30,7 +30,7 @@ public class SettingPreferences {
     }
 
     public static boolean isAuto() {
-        return PreferencesUtils.queryBoolean(MyApp.getInstance().getApplicationContext(), IS_AUTO, true);
+        return PreferencesUtils.queryBoolean(MyApp.getInstance().getApplicationContext(), IS_AUTO, false);
     }
 
 

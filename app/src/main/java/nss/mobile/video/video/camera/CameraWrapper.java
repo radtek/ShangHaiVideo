@@ -27,6 +27,7 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.view.SurfaceHolder;
 
+import nss.mobile.video.utils.preferences.CameraRotationCorrectionPreferences;
 import nss.mobile.video.video.CLog;
 import nss.mobile.video.video.camera.OpenCameraException.OpenType;
 
@@ -128,7 +129,9 @@ public class CameraWrapper {
         params.setPreviewFormat(ImageFormat.NV21);
         mNativeCamera.updateNativeCameraParameters(params);
         // TODO: 2018/12/11 修改   getRotationCorrection();
-        mNativeCamera.setDisplayOrientation(0);
+        int rotation = CameraRotationCorrectionPreferences.getRotation();
+        int i = rotation == -1 ? getRotationCorrection() : rotation;
+        mNativeCamera.setDisplayOrientation(i);
         CLog.d(CLog.CAMERA, "Preview size: " + previewSize.getWidth() + "x" + previewSize.getHeight());
     }
 

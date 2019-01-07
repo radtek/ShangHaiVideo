@@ -33,4 +33,7 @@ public interface RecordingButtonInterface {
     void onScanningWifiButtonClick();
 
     void onQualityButtonClick();
+
+    void onSnButtonClick();
+
 }

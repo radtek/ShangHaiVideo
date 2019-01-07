@@ -24,4 +24,10 @@ public class UrlApi {
     //阿里云上传文件状态
     public static String file_status_submit = baseUrl + "/api/mobile-video";
 
+
+    /**
+     * 获得信息
+     */
+    public static String update_app = baseUrl + "/api/mobile-camera";
+
 }

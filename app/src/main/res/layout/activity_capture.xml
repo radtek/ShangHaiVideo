@@ -12,6 +12,7 @@
         android:layout_height="match_parent" />
 
     <RelativeLayout
+        android:visibility="visible"
         android:id="@+id/capture_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -19,14 +20,14 @@
         <ImageView
             android:id="@+id/capture_mask_top"
             android:layout_width="match_parent"
-            android:layout_height="130dp"
+            android:layout_height="100dp"
             android:layout_alignParentTop="true"
             android:background="@drawable/shadow" />
 
         <RelativeLayout
             android:id="@+id/capture_crop_view"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:layout_below="@id/capture_mask_top"
             android:layout_centerHorizontal="true"
             android:background="@drawable/zxing_code_bg">

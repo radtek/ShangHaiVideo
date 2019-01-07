@@ -19,6 +19,8 @@ import com.alibaba.sdk.android.oss.model.PutObjectResult;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.qmuiteam.qmui.widget.QMUIEmptyView;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
@@ -168,40 +170,57 @@ public class AliFileActivity extends BaseActivity implements BaseQuickAdapter.On
     }
 
     private void actionDelete() {
-        for (AliFileBean mFile : mFiles) {
-            if (mFile.isSelect() && AliFileBean.STATUS_UPLOADING.equals(mFile.getUpStatus().toString())) {
-                displayMessageDialog("不能删除正在上传文件");
-                return;
-            }
-        }
-
-        displayLoadingDialog("删除文件中");
-        C.sTHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                for (AliFileBean mFile : mFiles) {
-                    if (mFile.isSelect()) {
-                        if (AliFileBean.STATUS_WANTING.equals(mFile.getUpStatus().toString())) {
-                            binder.removeFile(new File(mFile.getFilePath().toString()));
-                            mFile.delete();
-                        }
-                        File file = new File(mFile.getFilePath().toString());
-                        file.delete();
-                    }
-                }
-                List list = loadFile();
-                mFiles = list;
-
-                C.sHandler.post(new Runnable() {
+        QMUIDialog qmuiDialog = new QMUIDialog.MessageDialogBuilder(this)
+                .setMessage("确定要删除文件吗？")
+                .setTitle("提示")
+                .addAction("取消", new QMUIDialogAction.ActionListener() {
                     @Override
-                    public void run() {
-                        mFileAdapter.setNewData(list);
-                        mFileAdapter.notifyDataSetChanged();
-                        cancelLoadingDialog();
+                    public void onClick(QMUIDialog dialog, int index) {
+                        dialog.cancel();
                     }
-                });
-            }
-        });
+                })
+                .addAction("确定", new QMUIDialogAction.ActionListener() {
+                    @Override
+                    public void onClick(QMUIDialog dialog, int index) {
+                        dialog.cancel();
+                        for (AliFileBean mFile : mFiles) {
+                            if (mFile.isSelect() && AliFileBean.STATUS_UPLOADING.equals(mFile.getUpStatus().toString())) {
+                                displayMessageDialog("不能删除正在上传文件");
+                                return;
+                            }
+                        }
+
+                        displayLoadingDialog("删除文件中");
+                        C.sTHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                for (AliFileBean mFile : mFiles) {
+                                    if (mFile.isSelect()) {
+                                        if (AliFileBean.STATUS_WANTING.equals(mFile.getUpStatus().toString())) {
+                                            binder.removeFile(new File(mFile.getFilePath().toString()));
+                                            mFile.delete();
+                                        }
+                                        File file = new File(mFile.getFilePath().toString());
+                                        file.delete();
+                                    }
+                                }
+                                List list = loadFile();
+                                mFiles = list;
+
+                                C.sHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mFileAdapter.setNewData(list);
+                                        mFileAdapter.notifyDataSetChanged();
+                                        cancelLoadingDialog();
+                                    }
+                                });
+                            }
+                        });
+                    }
+                })
+                .show();
+        qmuiDialog.setCancelable(false);
 
 
     }
@@ -263,9 +282,14 @@ public class AliFileActivity extends BaseActivity implements BaseQuickAdapter.On
             }
             mFile.setUpstatus(status.getUpStatus().toString());
         }
+        C.sHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mFileAdapter.notifyDataSetChanged();
+                cancelLoadingDialog();
+            }
+        });
 
-        mFileAdapter.notifyDataSetChanged();
-        cancelLoadingDialog();
     }
 
     @Override
@@ -317,6 +341,7 @@ public class AliFileActivity extends BaseActivity implements BaseQuickAdapter.On
     @Override
     protected void onDestroy() {
         binder.removeListener(this);
+        unbindService(this);
         super.onDestroy();
     }
 
@@ -356,84 +381,6 @@ public class AliFileActivity extends BaseActivity implements BaseQuickAdapter.On
                     mFile.setUpstatus(file1.getUpStatus().toString());
                     mFile.saveSingle();
                     runOnUiThread(action);
-                    AliApiHelper.getVideoId(mFile.getAliVideoId(), new AliApiHelper.OnLoadAliVideoDetailsListener() {
-                        @Override
-                        public void onAliVideoDetails(AliVideoDetails videoDetails) {
-
-                            AliVideoBean video = videoDetails.getVideo();
-
-                            final Map<String, Object> params = new HashMap<>();
-                            MobileKeyBean last = MobileKeyBean.getLast();
-                            params.put("box-code", last.getMobileKey());
-                            params.put("end-at", System.currentTimeMillis());
-                            params.put("duration", (int) video.getDuration());
-                            params.put("done", "完成");
-                            params.put("view-preview", video.getCoverURL());
-                            //                            params.put("viewVod",);//点播地址
-                            params.put("filename", mFile.getFileName().toString());//文件名称
-//                            params.put("viewDownload",);//下载地址
-                            OkHttpHelper.post(UrlApi.file_status_submit, params, new StringCallback() {
-                                @Override
-                                public void onError(Call call, Exception e, int id) {
-
-                                }
-
-                                @Override
-                                public void onResponse(String response, int id, int code) {
-
-                                }
-                            });
-                        }
-
-                        @Override
-                        public void onAliVideoFailed(Exception e, String hint) {
-
-                        }
-                    });
-
-                    AliApiHelper.getVideoPlayUrl(mFile.getAliVideoId(), new OnAliVideoPlayInfoListener() {
-                        @Override
-                        public void onAliVideoPlaySuccess(AliPlayInfoResult aliPlayInfoResult) {
-                            AliPlayInfoResult.PlayInfoListBean playInfoList = aliPlayInfoResult.getPlayInfoList();
-                            if (playInfoList != null) {
-                                List<AliPlayInfo> playInfo = playInfoList.getPlayInfo();
-                                if (playInfo != null && playInfo.size() > 0) {
-                                    AliPlayInfo aliPlayInfo = playInfo.get(0);
-                                    final Map<String, String> params = new HashMap<>();
-                                    MobileKeyBean last = MobileKeyBean.getLast();
-                                    params.put("box-code", last.getMobileKey());
-                                    params.put("done", "完成");
-                                    params.put("viewVod", aliPlayInfo.getPlayURL());//点播地址
-                                    mFile.setVideVod(aliPlayInfo.getPlayURL());
-                                    mFile.setSubmitServerStatus(1);
-                                    mFile.saveSingle();
-                                    //                                    params.put("viewDownload", );//下载地址
-                                    OkHttpUtils.post().url(UrlApi.file_status_submit)
-                                            .params(params)
-                                            .build()
-                                            .execute(new StringCallback() {
-                                                @Override
-                                                public void onError(Call call, Exception e, int id) {
-
-                                                }
-
-                                                @Override
-                                                public void onResponse(String response, int id, int code) {
-
-                                                }
-                                            });
-                                }
-                            }
-
-                        }
-
-                        @Override
-                        public void onAliVideoPlayFailed(Exception e, String hint) {
-
-                        }
-                    });
-
-
                     return;
                 }
             }
@@ -468,23 +415,6 @@ public class AliFileActivity extends BaseActivity implements BaseQuickAdapter.On
             if (uploadFile.getAbsolutePath().equals(mFile.getFilePath())) {
                 mFile.setAliVideoId(aliOssToken.getVideoId());
                 mFile.saveSingle();
-                Map<String, Object> params = new HashMap<>();
-                MobileKeyBean last = MobileKeyBean.getLast();
-                params.put("box-code", last.getMobileKey());
-                params.put("begin-at", System.currentTimeMillis());
-                params.put("size", uploadFile.length());
-                params.put("oss-guid", aliOssToken.getVideoId());
-                OkHttpHelper.post(UrlApi.file_status_submit, params, new StringCallback() {
-                    @Override
-                    public void onError(Call call, Exception e, int id) {
-
-                    }
-
-                    @Override
-                    public void onResponse(String response, int id, int code) {
-
-                    }
-                });
                 return;
             }
         }
@@ -500,22 +430,6 @@ public class AliFileActivity extends BaseActivity implements BaseQuickAdapter.On
                     mFile.saveSingle();
                     runOnUiThread(action);
 
-                    Map<String, Object> params = new HashMap<>();
-                    MobileKeyBean last = MobileKeyBean.getLast();
-                    params.put("box-code", last.getMobileKey());
-                    params.put("end-at", System.currentTimeMillis());
-                    params.put("done", "失败");
-                    OkHttpHelper.post(UrlApi.file_status_submit, params, new StringCallback() {
-                        @Override
-                        public void onError(Call call, Exception e, int id) {
-
-                        }
-
-                        @Override
-                        public void onResponse(String response, int id, int code) {
-
-                        }
-                    });
                     return;
                 }
             }

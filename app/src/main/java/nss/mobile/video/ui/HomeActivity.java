@@ -86,11 +86,6 @@ public class HomeActivity extends BaseActivity {
                 setNavNormal(lastNav);
                 int tag = (int) v.getTag();
                 if (tag == 2) {
-                    TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-                    @SuppressLint("MissingPermission") String imei = telephonyManager.getDeviceId();
-                    VideoFile.DEFAULT_PREFIX = imei + "_";
-                    UploadFileUtils.MOBILE_ID = imei;
-                    // TODO: 2018/11/4
                     final CaptureConfiguration config = createCaptureConfiguration();
 
                     final Intent intent = new Intent(this, VideoCaptureActivity.class);
@@ -137,11 +132,6 @@ public class HomeActivity extends BaseActivity {
     @Override
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-//        super.onSaveInstanceState(outState);
     }
 
     private void setNavNormal(ViewGroup vp) {

@@ -39,6 +39,7 @@ import nss.mobile.video.base.BindLayout;
 import nss.mobile.video.base.bind.BindView;
 import nss.mobile.video.bean.MemoryBean;
 import nss.mobile.video.event.FileMemoryEvent;
+import nss.mobile.video.ui.SnActivity;
 import nss.mobile.video.ui.video.AliFileActivity;
 import nss.mobile.video.ui.video.AllFunctionActivity;
 import nss.mobile.video.ui.wifi.WifiManagerActivity;
@@ -204,6 +205,7 @@ public class VideoCaptureActivity extends BaseActivity implements RecordingButto
         MyApp.getInstance().startCaseFileMemoryThread();
         mVideoCaptureView.updateUIRecordingOngoing();
         isVideoing = true;
+        MyApp.isVideo = true;
     }
 
     @Override
@@ -249,6 +251,11 @@ public class VideoCaptureActivity extends BaseActivity implements RecordingButto
 
     }
 
+    @Override
+    public void onSnButtonClick() {
+        startActivity(SnActivity.class);
+    }
+
 
     @Override
     public void onRecordingStopped(String message) {
@@ -259,6 +266,7 @@ public class VideoCaptureActivity extends BaseActivity implements RecordingButto
         mVideoCaptureView.updateUIRecordingFinished(getVideoThumbnail());
         mVideoRecorder.setVideoFile(new VideoFile(null));
         mVideoRecorder.releaseRecorderResources();
+        MyApp.isVideo = false;
     }
 
     @Override
@@ -375,12 +383,14 @@ public class VideoCaptureActivity extends BaseActivity implements RecordingButto
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        MyApp.isVideo = false;
         FileMemoryEvent.getInstance().unregister(this);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        MyApp.isVideo = false;
         if (SettingPreferences.isAuto()) {
             mVideoCaptureView.closeAutoVideo();
         }

@@ -5,10 +5,14 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.function.BiFunction;
 
 import nss.mobile.video.R;
 import nss.mobile.video.base.BaseActivity;
@@ -26,11 +30,14 @@ public class OnlyKeySettingActivity extends BaseActivity {
     EditText mPwEt;
     @BindView(R.id.key_setting_save_action_tv)
     TextView mSaveActionTv;
+    @BindView(R.id.key_setting_scanning_action_tv)
+    TextView mScanningActionTv;
 
 
     @Override
     public void initWidget() {
         super.initWidget();
+        mScanningActionTv.setOnClickListener(this);
         mSaveActionTv.setOnClickListener(this);
         MobileKeyBean last = MobileKeyBean.getLast();
         mKeyEt.setText(last.getMobileKey());
@@ -40,7 +47,9 @@ public class OnlyKeySettingActivity extends BaseActivity {
     @Override
     public void forbidClick(View v) {
         super.forbidClick(v);
-        if (v.getId() == mSaveActionTv.getId()) {
+        if (v.getId() == mScanningActionTv.getId()) {
+            toScanningActivity();
+        } else if (v.getId() == mSaveActionTv.getId()) {
             String key = mKeyEt.getText().toString().trim();
             String pw = mPwEt.getText().toString().trim();
             if (TextUtils.isEmpty(key)) {
@@ -101,5 +110,29 @@ public class OnlyKeySettingActivity extends BaseActivity {
             e.printStackTrace();
         }
         return "";
+    }
+
+    @Override
+    public void onResultCode(String resultContent, boolean b) {
+        if (!b) {
+            return;
+        }
+        new QMUIDialog.MessageDialogBuilder(this)
+                .setTitle("提示")
+                .setMessage("扫描结果为:"+resultContent+"\r\n确定使用吗?")
+                .addAction("取消", new QMUIDialogAction.ActionListener() {
+                    @Override
+                    public void onClick(QMUIDialog dialog, int index) {
+                        dialog.cancel();
+                    }
+                })
+                .addAction("确定", new QMUIDialogAction.ActionListener() {
+                    @Override
+                    public void onClick(QMUIDialog dialog, int index) {
+                        mKeyEt.setText(resultContent);
+                        dialog.cancel();
+                    }
+                })
+                .show();
     }
 }

@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 
+import com.google.gson.internal.LinkedTreeMap;
 import com.qmuiteam.qmui.util.QMUIPackageHelper;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
@@ -36,10 +37,12 @@ import java.util.Map;
 import nss.mobile.video.base.BaseActivity;
 import nss.mobile.video.base.BindLayout;
 import nss.mobile.video.bean.MobileKeyBean;
+import nss.mobile.video.info.UrlApi;
 import nss.mobile.video.service.UploadFileUtils;
 import nss.mobile.video.ui.HomeActivity;
 import nss.mobile.video.utils.FileMeoryUtils;
 import nss.mobile.video.utils.JsonUtils;
+import nss.mobile.video.utils.preferences.CameraRotationCorrectionPreferences;
 import nss.mobile.video.video.VideoCaptureActivity;
 import nss.mobile.video.video.VideoFile;
 import nss.mobile.video.video.configuration.CaptureConfiguration;
@@ -94,7 +97,6 @@ public class MainActivity extends BaseActivity {
 
             //说明权限都已经通过，可以做你想做的事情去
             openVideo(null);
-            finish();
         }
     }
 
@@ -165,23 +167,41 @@ public class MainActivity extends BaseActivity {
         if (last == null) {
             MobileKeyBean.saveNormalKey(this);
         }
+        displayLoadingDialog("检测是否更新中...");
 
         OkHttpUtils.get()
-                .addParams("mbox-code","0021-0000DF-YDQZZD-000001")
-                .url("http://nss.justice.org.cn/notary_test/api/get-setting")
+                .addParams("box-code", MobileKeyBean.getLast().getMobileKey())
+                .url(UrlApi.update_app)
                 .build()
                 .execute(new StringCallback() {
+                    @Override
+                    public void onAfter(int id) {
+                        super.onAfter(id);
+
+                    }
 
                     @Override
                     public void onError(Call call, Exception e, int id) {
+                        cancelLoadingDialog();
                         toAty();
                     }
 
                     @Override
                     public void onResponse(String response, int id, int code) {
+                        cancelLoadingDialog();
                         Map<String, Object> map = JsonUtils.fromTypeJson(response, Map.class);
-                        String version = (String) map.get("version");
-                        final String uploadUrl = (String) map.get("update-url");
+                        ArrayList<Map<String, Object>> dataList = (ArrayList<Map<String, Object>>) map.get("dataList");
+                        if (dataList == null || dataList.size() == 0) {
+                            toAty();
+                            return;
+                        }
+                        Map<String, Object> data = dataList.get(0);
+                        if (data == null) {
+                            toAty();
+                            return;
+                        }
+                        String version = (String) data.get("version");
+                        final String uploadUrl = (String) data.get("update-url");
                         String appVersion = QMUIPackageHelper.getAppVersion(MyApp.getInstance());
                         if (appVersion.equals(version)) {
                             toAty();
@@ -220,7 +240,7 @@ public class MainActivity extends BaseActivity {
 
                                                     @Override
                                                     public void onResponse(File response, int id, int code) {
-                                                        install(response.getAbsolutePath());
+                                                        installApk(MainActivity.this, response);
                                                     }
 
                                                     @Override
@@ -250,32 +270,49 @@ public class MainActivity extends BaseActivity {
 //        toAty();
     }
 
-    private void install(String filePath) {
-        File apkFile = new File(filePath);
+    public static void installApk(Context context, File file) {
+
+
         Intent intent = new Intent(Intent.ACTION_VIEW);
+        //放在此处
+        //由于没有在Activity环境下启动Activity,所以设置下面的标签
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        Uri apkUri = null;
+        //判断版本是否是 7.0 及 7.0 以上
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            Uri contentUri = FileProvider.getUriForFile(
-                    this
-                    , "你的包名.fileprovider"
-                    , apkFile);
-            intent.setDataAndType(contentUri, "application/vnd.android.package-archive");
+            apkUri = FileProvider.getUriForFile(context, "nss.mobile.video", file);
+            //添加这一句表示对目标应用临时授权该Uri所代表的文件
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         } else {
-            intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
+            apkUri = Uri.fromFile(file);
         }
-        startActivity(intent);
+
+        intent.setDataAndType(apkUri,
+                "application/vnd.android.package-archive");
+        context.startActivity(intent);
     }
 
     private void toAty() {
         C.sTHandler.post(new MyApp.SendStatusRunnable());
-        UploadFileUtils.setmobileId(MobileKeyBean.getLast().getMobileKey() );
+        UploadFileUtils.setmobileId(MobileKeyBean.getLast().getMobileKey());
         // TODO: 2018/11/4
         final CaptureConfiguration config = createCaptureConfiguration();
 
-        final Intent intent = new Intent(this, VideoCaptureActivity.class);
-        intent.putExtra(VideoCaptureActivity.EXTRA_CAPTURE_CONFIGURATION, config);
-        startActivityForResult(intent, 101);
+
+        String product = Build.PRODUCT;
+        String manufacturer = Build.MANUFACTURER;
+        if ("msm8953_64".equals(product) && "QUALCOMM".equals(manufacturer)) {
+            startActivity(HomeActivity.class);
+            finish();
+        } else {
+            CameraRotationCorrectionPreferences.saveRotation(0);
+            final Intent intent = new Intent(this, VideoCaptureActivity.class);
+            intent.putExtra(VideoCaptureActivity.EXTRA_CAPTURE_CONFIGURATION, config);
+            startActivityForResult(intent, 101);
+            finish();
+        }
+
     }
 
     private CaptureConfiguration createCaptureConfiguration() {

@@ -54,6 +54,7 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
     private ImageView mAllMenuIv;
     private ImageView mWifiIv;
     private ImageView mQualityIv;//图片质量选择
+    private ImageView mSnIv;//查看序列号;
 
     private SurfaceView mSurfaceView;
     private TextView mTimerTv;
@@ -113,6 +114,9 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
         mAllMenuIv = videoCapture.findViewById(R.id.videocapture_allMenu_iv);
         mWifiIv = videoCapture.findViewById(R.id.videocapture_wifi_iv);
 
+        mSnIv = videoCapture.findViewById(R.id.videocapture_sn_iv);
+
+        mSnIv.setOnClickListener(this);
         mQualityIv.setOnClickListener(this);
         mAllMenuIv.setOnClickListener(this);
         mWifiIv.setOnClickListener(this);
@@ -174,6 +178,7 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
             mAutoTimeTv.setVisibility(View.GONE);
         }
         mWifiIv.setVisibility(View.VISIBLE);
+        mSnIv.setVisibility(VISIBLE);
         mSizeGroup.setVisibility(View.GONE);
         mAllMenuIv.setVisibility(View.VISIBLE);
 
@@ -203,6 +208,7 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
 
         mQualityIv.setVisibility(View.GONE);
         mWifiIv.setVisibility(View.GONE);
+        mSnIv.setVisibility(GONE);
 
         if (mShowTimer) {
             mTimerTv.setVisibility(View.VISIBLE);
@@ -248,6 +254,8 @@ public class VideoCaptureView extends FrameLayout implements OnClickListener {
         } else if (v.getId() == mCloseErrorTv.getId()) {
             notShowError = true;
             mErrorGroup.setVisibility(GONE);
+        }else if (v.getId() == mSnIv.getId()){
+            mRecordingInterface.onSnButtonClick();
         }
 
     }
