@@ -13,6 +13,7 @@
         android:background="@color/color_theme" />
 
     <include
+        android:visibility="gone"
         layout="@layout/include_user"
         />
 
@@ -32,6 +33,7 @@
         android:orientation="horizontal">
 
         <LinearLayout
+            android:visibility="gone"
             android:id="@+id/activity_home_nav_index"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

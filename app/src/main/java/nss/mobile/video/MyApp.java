@@ -1,16 +1,21 @@
 package nss.mobile.video;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.BatteryManager;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.support.multidex.MultiDex;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.alibaba.sdk.android.oss.model.PutObjectRequest;
@@ -37,6 +42,8 @@ import java.util.Map;
 import nss.mobile.video.bean.AliFileBean;
 import nss.mobile.video.bean.MemoryBean;
 import nss.mobile.video.bean.MobileKeyBean;
+import nss.mobile.video.card.exception.CrashHandler;
+import nss.mobile.video.card.utils.Utils;
 import nss.mobile.video.event.FileMemoryEvent;
 import nss.mobile.video.http.OkHttpHelper;
 import nss.mobile.video.http.ali.AliOssToken;
@@ -61,6 +68,10 @@ public class MyApp extends LitePalApplication implements ServiceConnection {
     private CaseFileMemorySizeThread caseFileMemorySizeThread = new CaseFileMemorySizeThread();
     private AliUploadFileService.UploadFileBinder mUploadFileBinder;
     public static boolean isVideo = false;
+
+    private String rootPath;
+    private HandlerThread handlerThread;
+    public static byte[] BitmapFinger;
 
     public static MyApp getInstance() {
         return instance;
@@ -92,6 +103,13 @@ public class MyApp extends LitePalApplication implements ServiceConnection {
         Intent intent = new Intent(this, AliUploadFileService.class);
         bindService(intent, this, BIND_AUTO_CREATE);
         EventBus.getDefault().register(this);
+
+
+        initInstance();
+        Utils.init(this);
+        //initCrachHandler();
+        initHandlerThread();
+        setRootPath();
     }
 
     private long lastTime;
@@ -259,4 +277,40 @@ public class MyApp extends LitePalApplication implements ServiceConnection {
         return LocationUtils.getLngAndLatWithNetwork(this);
     }
 
+
+    public void initInstance() {
+        instance = this;
+    }
+
+    public void initHandlerThread() {
+        handlerThread = new HandlerThread("handlerThread", android.os.Process.THREAD_PRIORITY_BACKGROUND);
+        handlerThread.start();
+    }
+
+
+
+    /*可以捕捉异常，并且将错误信息存在设备里。*/
+    public void initCrachHandler() {
+        CrashHandler catchHandler = CrashHandler.getInstance();
+        catchHandler.init(getApplicationContext());
+    }
+
+    public String getRootPath() {
+        return rootPath;
+    }
+
+    public HandlerThread getHandlerThread() {
+        return handlerThread;
+    }
+
+    private void setRootPath() {
+        PackageManager manager = this.getPackageManager();
+        try {
+            PackageInfo info = manager.getPackageInfo(this.getPackageName(), 0);
+            rootPath = info.applicationInfo.dataDir;
+            Log.i("rootPath", "################rootPath=" + rootPath);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 }

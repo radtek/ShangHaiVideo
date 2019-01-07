@@ -280,7 +280,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
     }
 
     public void clickTopbarLeftImgs() {
-        finish();
+        onBackPressed();
     }
 
     public void forbidClick(View v) {
@@ -333,6 +333,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
                 .setTipWord(msg)
                 .setIconType(QMUITipDialog.Builder.ICON_TYPE_LOADING)
                 .create();
+        mLoadingDialog.setCancelable(true);
         if (isFinishing()) {
             return;
         }
@@ -733,6 +734,17 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
     @Override
     public void toast(CharSequence msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT);
+    }
+
+
+
+    @Override
+    public void onBackPressed() {
+        if (mLoadingDialog != null && mLoadingDialog.isShowing()) {
+            cancelLoadingDialog();
+            return;
+        }
+        super.onBackPressed();
     }
 }
 

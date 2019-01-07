@@ -5,13 +5,14 @@ android {
     defaultConfig {
         applicationId "nss.mobile.video"
         minSdkVersion 19
-        targetSdkVersion rootProject.ext.sdkVersion
+//        targetSdkVersion rootProject.ext.sdkVersion
+        targetSdkVersion 22
         versionCode 1
         versionName "1.0.0"
         multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {
-            abiFilters "armeabi", "armeabi-v7a", "x86", "mips"
+            abiFilters "armeabi", "armeabi-v7a"
         }
     }
     buildTypes {
@@ -25,10 +26,11 @@ android {
         abi {
             enable true
             reset()
-            include 'x86', 'x86_64', 'arm64-v8a', 'armeabi-v7a', 'armeabi'
+//            include 'x86', 'x86_64', 'arm64-v8a', 'armeabi-v7a', 'armeabi'
             universalApk false
         }
     }
+
 
     compileOptions {
         incremental false
@@ -147,4 +149,8 @@ dependencies {
     compile 'commons-net:commons-net:3.6'
     compile 'com.aliyun.dpa:oss-android-sdk:2.9.2'
     implementation files('libs/BASE64Encoder.jar')
+    implementation files('libs/AraBMApiDev.jar')
+    implementation files('libs/AraBMApiIdcard.jar')
+    implementation files('libs/idcardapi.jar')
+    implementation files('libs/ZKLiveFaceService5.6.jar')
 }

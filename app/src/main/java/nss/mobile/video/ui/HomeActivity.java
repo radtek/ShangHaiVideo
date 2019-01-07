@@ -32,8 +32,8 @@ import nss.mobile.video.video.configuration.PredefinedCaptureConfigurations;
 public class HomeActivity extends BaseActivity {
     public static final int R_SELECT_WAREHOUSE = 2;
 
-    @BindView(R.id.activity_home_nav_index)
-    ViewGroup navDev;
+//    @BindView(R.id.activity_home_nav_index)
+//    ViewGroup navDev;
     @BindView(R.id.activity_home_nav_card)
     ViewGroup navCard;//首页
     @BindView(R.id.activity_home_nav_get)
@@ -53,23 +53,23 @@ public class HomeActivity extends BaseActivity {
     @Override
     public void initData() {
         super.initData();
-        fragments.add(new DevFragment());
+//        fragments.add(new DevFragment());
         fragments.add(new CardFragment());
     }
 
     @Override
     public void initWidget() {
         super.initWidget();
-        navDev.setTag(0);
-        navDev.setOnClickListener(this);
-        navCard.setTag(1);
+//        navDev.setTag(0);
+//        navDev.setOnClickListener(this);
+        navCard.setTag(0);
         navCard.setOnClickListener(this);
-        navGet.setTag(2);
+        navGet.setTag(1);
         navGet.setOnClickListener(this);
 
         myChangeFragment(R.id.function_fl_content, fragments.get(0));
-        setNavSelect(navDev);
-        lastNav = navDev;
+        setNavSelect(navCard);
+        lastNav = navCard;
         ViewGroup.LayoutParams layoutParams = vBar.getLayoutParams();
         layoutParams.height = QMUIDisplayHelper.getStatusBarHeight(this);
     }
@@ -85,7 +85,7 @@ public class HomeActivity extends BaseActivity {
                 }
                 setNavNormal(lastNav);
                 int tag = (int) v.getTag();
-                if (tag == 2) {
+                if (tag == 1) {
                     final CaptureConfiguration config = createCaptureConfiguration();
 
                     final Intent intent = new Intent(this, VideoCaptureActivity.class);
