@@ -1,9 +1,11 @@
 package nss.mobile.video.base;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ContentUris;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -14,17 +16,25 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import me.nereo.multi_image_selector.utils.FileUtils;
 import nss.mobile.video.R;
 import nss.mobile.video.base.bind.BindViewUtils;
+
 import com.qmuiteam.qmui.widget.QMUITopBar;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
 import com.zhy.http.okhttp.OkHttpUtils;
+
+import java.io.File;
+import java.io.IOException;
 
 
 /**
@@ -35,6 +45,8 @@ public abstract class BaseFragment extends Fragment implements View.OnClickListe
     private final int REQUEST_CHOOSE_PHOTO = 22;//点击头像切换头像
     public QMUITopBar mTopbar;
     private BaseFragment currentKJFragment;
+    private File mTmpFile;
+    private final int REQUEST_CAMERA =321;
 
     @Nullable
     @Override
@@ -206,6 +218,21 @@ public abstract class BaseFragment extends Fragment implements View.OnClickListe
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
+            case REQUEST_CAMERA:
+                if (resultCode == Activity.RESULT_OK) {
+                    if (mTmpFile != null) {
+                        onCameraResult(mTmpFile);
+                    }
+                } else {
+                    // delete tmp file
+                    while (mTmpFile != null && mTmpFile.exists()) {
+                        boolean success = mTmpFile.delete();
+                        if (success) {
+                            mTmpFile = null;
+                        }
+                    }
+                }
+                break;
             case REQUEST_CHOOSE_PHOTO:
                 if (resultCode == Activity.RESULT_OK) {
                     if (Build.VERSION.SDK_INT >= 19) {
@@ -221,6 +248,10 @@ public abstract class BaseFragment extends Fragment implements View.OnClickListe
                 super.onActivityResult(requestCode, resultCode, data);
                 break;
         }
+
+    }
+
+    public void onCameraResult(File mTmpFile) {
 
     }
 
@@ -296,6 +327,38 @@ public abstract class BaseFragment extends Fragment implements View.OnClickListe
         transaction.commit();
 
     }
+
+
+    /**
+     * Open camera
+     */
+    public void showCameraAction() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+            try {
+                mTmpFile = FileUtils.createTmpFile(getActivity());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (mTmpFile != null && mTmpFile.exists()) {
+                Uri value = null;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION); //添加这一句表示对目标应用临时授权该Uri所代表的文件
+                    value = FileProvider.getUriForFile(getContext(), "nss.mobile.video", mTmpFile);//通过FileProvider创建一个content类型的Uri
+                } else {
+                    value = Uri.fromFile(mTmpFile);
+                }
+
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, value);
+                startActivityForResult(intent, REQUEST_CAMERA);
+            } else {
+                Toast.makeText(getActivity(), me.nereo.multi_image_selector.R.string.mis_error_image_not_exist, Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(getActivity(), me.nereo.multi_image_selector.R.string.mis_msg_no_camera, Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
 
 }

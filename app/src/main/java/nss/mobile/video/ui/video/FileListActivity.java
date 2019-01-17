@@ -159,6 +159,7 @@ public class FileListActivity extends BaseActivity implements BaseQuickAdapter.O
         File[] files = file.listFiles();
         SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         for (File file1 : files) {
+
             FileBean f = new FileBean();
             f.setFileName(file1.getName());
             long l1 = file1.lastModified();

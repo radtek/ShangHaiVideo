@@ -261,7 +261,12 @@ public class AliFileActivity extends BaseActivity implements BaseQuickAdapter.On
         SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         for (File file1 : files) {
-
+            if (file1.isDirectory()) {
+                continue;
+            }
+            if (!file1.getName().endsWith(".mp4")) {
+                continue;
+            }
             AliFileBean f = new AliFileBean();
             f.setFileName(file1.getName());
             long l1 = file1.lastModified();

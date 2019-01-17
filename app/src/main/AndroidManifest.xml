@@ -40,7 +40,10 @@
 
     <uses-feature android:name="android.hardware.camera.autofocus" />
 
-    <uses-feature android:name="Android.hardware.nfc" android:required="true" />
+    <uses-feature
+        android:name="Android.hardware.nfc"
+        android:required="true" />
+
     <uses-permission android:name="android.permission.NFC" />
 
 
@@ -120,6 +123,7 @@
         <activity android:name=".ui.video.AliFileActivity" />
         <activity android:name=".ui.OnlyKeySettingActivity" />
         <activity android:name=".ui.SnActivity" />
+        <activity android:name=".card.VerifyActivity" />
 
         <receiver
             android:name=".receiver.NetworkReceiver"

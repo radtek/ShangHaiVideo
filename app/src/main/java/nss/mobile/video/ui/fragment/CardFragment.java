@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -21,17 +22,21 @@ import android.widget.Toast;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
 import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import android_serialport_api.SerialPortManager;
 import cn.com.aratek.fp.FingerprintScanner;
+import nss.mobile.video.C;
 import nss.mobile.video.MyApp;
 import nss.mobile.video.R;
 import nss.mobile.video.base.BaseFragment;
 import nss.mobile.video.base.BindLayout;
 import nss.mobile.video.base.bind.BindView;
 import nss.mobile.video.bean.CardDetails;
+import nss.mobile.video.card.VerifyActivity;
 import nss.mobile.video.card.aratek.SwitchUtil;
 import nss.mobile.video.card.liveface.CardDevice;
 import nss.mobile.video.card.liveface.ZKLiveFaceAnalyzer;
@@ -42,6 +47,7 @@ import nss.mobile.video.card.provider.ParseSFZAPI;
 import nss.mobile.video.card.receiver.IDCardReceiver;
 import nss.mobile.video.card.utils.FileUtils;
 import nss.mobile.video.card.utils.ToastUtil;
+import nss.mobile.video.http.CardCheckHttp;
 import nss.mobile.video.ui.adapter.CardDetailsAdapter;
 import nss.mobile.video.ui.adapter.ICardDetails;
 
@@ -67,7 +73,6 @@ public class CardFragment extends BaseFragment {
     @BindView(R.id.frag_card_check_zhiwen_tv)
     View mCheckZhiwenTv;
 
-    public ProgressDialog mProgressDialog;
 
     private AsyncParseSFZ asyncParseSFZ;
     private byte[] mPersonHead;
@@ -133,9 +138,9 @@ public class CardFragment extends BaseFragment {
         if (false == isInit) {
             ToastUtil.showShort(getContext(), "请先导入授权!");
         } else {
-//            Intent intent = new Intent(getActivity(), VerifyActivity.class);
-//            intent.putExtra("mPersonHead", mPersonHead);
-//            startActivity(intent);
+            Intent intent = new Intent(getActivity(), VerifyActivity.class);
+            intent.putExtra("mPersonHead", mPersonHead);
+            startActivity(intent);
 //            SwipeCardActivity.this.finish();
         }
     }
@@ -180,9 +185,44 @@ public class CardFragment extends BaseFragment {
                 ToastUtil.showShort(getContext(), "请先读取身份证!");
                 return;
             }
-            showProgressDialog("获取人脸识别权限......");
-            initAuthOption();
+            showCameraAction();
         }
+    }
+
+    @Override
+    public void onCameraResult(File mTmpFile) {
+        displayLoadingDialog("校验身份中");
+        C.sTHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Bitmap bitmap = BitmapFactory.decodeFile(mTmpFile.getAbsolutePath());
+                Bitmap bitmap1 = CardCheckHttp.compressImage(bitmap);
+                String encodeImgs = CardCheckHttp.encodeImage(bitmap1);
+                CardCheckHttp.checkDard(mOperatePeople.getPeopleName()
+                        , mOperatePeople.getPeopleIDCode()
+                        , encodeImgs
+                        , new CardCheckHttp.OnCheckCardFaceListener() {
+                            @Override
+                            public void onFailed(String error) {
+                                displayMessageDialog(error);
+                                cancelLoadingDialog();
+                            }
+
+                            @Override
+                            public void onSuccess(Map o) {
+                                cancelLoadingDialog();
+                                displayTipDialogSuccess("验证成功");
+                                C.sHandler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        cancelTipDialogSuccess();
+                                    }
+                                }, 2_000);
+                            }
+                        });
+            }
+        });
+
     }
 
     /**

@@ -23,13 +23,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import nss.mobile.video.video.VideoFile;
+
 /**
  * UncaughtException处理类,当程序发生Uncaught异常的时候,有该类来接管程序,并记录发送错误报告.
  * 需要在Application中注册，为了要在程序启动器就监控整个程序。
  */
 public class CrashHandler implements UncaughtExceptionHandler {
 
-    public static final String TAG = "liwei";
+    private static final String TAG = "CrashHandler";
 
     //系统默认的UncaughtException处理类
     private UncaughtExceptionHandler mDefaultHandler;
@@ -94,6 +96,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
 
     /**
      * 自定义错误处理,收集错误信息 发送错误报告等操作均在此完成.
+     *
      * @param ex
      * @return true:如果处理了该异常信息;否则返回false.
      */
@@ -120,6 +123,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
 
     /**
      * 收集设备参数信息
+     *
      * @param ctx
      */
     public void collectDeviceInfo(Context ctx) {
@@ -149,6 +153,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
 
     /**
      * 保存错误信息到文件中
+     *
      * @param ex
      * @return 返回文件名称, 便于将文件传送到服务器
      */
@@ -175,12 +180,18 @@ public class CrashHandler implements UncaughtExceptionHandler {
             String time = formatter.format(new Date());
             String fileName = "crash-" + time + "-" + timestamp + ".log";
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-                String path = "/mnt/sdcard/crash/";
-                File dir = new File(path);
+                String path = VideoFile.baseFile().getAbsolutePath();
+                File dir = new File(path+"logs");
                 if (!dir.exists()) {
                     dir.mkdirs();
                 }
-                FileOutputStream fos = new FileOutputStream(path + fileName);
+                File saveFile = new File(dir, fileName);
+                if (!saveFile.exists()) {
+                    boolean newFile = saveFile.createNewFile();
+                    Log.i(TAG, "saveCatchInfo2File: " + saveFile.getAbsolutePath() + "创建是否成功：" + newFile);
+                }
+
+                FileOutputStream fos = new FileOutputStream(saveFile);
                 fos.write(sb.toString().getBytes());
                 fos.close();
             }

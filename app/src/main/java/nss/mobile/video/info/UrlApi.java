@@ -9,9 +9,10 @@ package nss.mobile.video.info;
  *
  * @author ql
  */
-public class UrlApi {
+public class  UrlApi {
 
-    public static final String baseUrl = "http://nss.justice.org.cn/notary_test";
+//    public static final String baseUrl = "http://nss.justice.org.cn/notary_test";
+    public static final String baseUrl = "http://nss.justice.org.cn/notary";
 
     //    public static final String baseUrl = "http://192.168.6.111:10881";
     public static String getUrl() {

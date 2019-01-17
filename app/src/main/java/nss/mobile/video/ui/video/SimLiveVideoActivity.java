@@ -2,6 +2,7 @@ package nss.mobile.video.ui.video;
 
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -20,6 +21,7 @@ import com.qiniu.pili.droid.streaming.MicrophoneStreamingSetting;
 import com.qiniu.pili.droid.streaming.StreamingProfile;
 import com.qiniu.pili.droid.streaming.StreamingState;
 import com.qiniu.pili.droid.streaming.StreamingStateChangedListener;
+import com.qiniu.pili.droid.streaming.WatermarkSetting;
 import com.qiniu.pili.droid.streaming.widget.AspectFrameLayout;
 
 import java.io.IOException;
@@ -47,6 +49,8 @@ public class SimLiveVideoActivity extends BaseActivity implements CameraPreviewF
     TextView mOpenLiveTv;
     @BindView(R.id.live_video_camera_tv)
     TextView mCameraTv;
+    @BindView(R.id.live_video_close_tv)
+    View mCloseLiveTv;
 
     private boolean mIsLiveVideo = false;
     private CameraStreamingSetting setting;
@@ -64,6 +68,7 @@ public class SimLiveVideoActivity extends BaseActivity implements CameraPreviewF
 
         mOpenLiveTv.setOnClickListener(this);
         mCameraTv.setOnClickListener(this);
+        mCloseLiveTv.setOnClickListener(this);
         AspectFrameLayout afl = (AspectFrameLayout) findViewById(R.id.cameraPreview_afl);
         afl.setShowMode(AspectFrameLayout.SHOW_MODE.REAL);
         CameraPreviewFrameView cameraPreviewFrameView =
@@ -80,7 +85,7 @@ public class SimLiveVideoActivity extends BaseActivity implements CameraPreviewF
                     .setEncodingSizeLevel(StreamingProfile.VIDEO_ENCODING_HEIGHT_480)
                     .setEncoderRCMode(StreamingProfile.EncoderRCModes.BITRATE_PRIORITY)
 //                .setAVProfile(avProfile)
-                    .setDnsManager(getMyDnsManager())
+                    .setDnsManager(null)
                     .setAdaptiveBitrateEnable(true)
                     .setFpsControllerEnable(true)
                     .setStreamStatusConfig(new StreamingProfile.StreamStatusConfig(3))
@@ -98,9 +103,10 @@ public class SimLiveVideoActivity extends BaseActivity implements CameraPreviewF
                     AVCodecType.HW_VIDEO_WITH_HW_AUDIO_CODEC); // hw codec  // soft codec
             mMicrophoneStreamingSetting = new MicrophoneStreamingSetting();
             mMicrophoneStreamingSetting.setBluetoothSCOEnabled(false);
+
             streamingManager.prepare(setting, mMicrophoneStreamingSetting, null, streamingProfile);
             streamingManager.setStreamingStateListener(this);
-        } catch (URISyntaxException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -111,12 +117,15 @@ public class SimLiveVideoActivity extends BaseActivity implements CameraPreviewF
     public void forbidClick(View v) {
         super.forbidClick(v);
         if (v.getId() == mOpenLiveTv.getId()) {
+            startLiveVideo();
             if (mIsLiveVideo) {
-                stopLiveVideo();
+
             } else {
-                startLiveVideo();
+
             }
-        } else if (v.getId() == mCameraTv.getId()) {
+        }else if(v.getId() == mCloseLiveTv.getId()){
+            stopLiveVideo();
+        }else if (v.getId() == mCameraTv.getId()) {
             if (isBack) {
                 streamingManager.switchCamera(CameraStreamingSetting.CAMERA_FACING_ID.CAMERA_FACING_FRONT);
             } else {

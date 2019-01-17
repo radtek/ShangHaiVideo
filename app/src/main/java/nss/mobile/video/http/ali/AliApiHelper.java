@@ -25,7 +25,6 @@ import java.util.logging.Logger;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import nss.mobile.video.http.OkHttpHeader;
 import nss.mobile.video.utils.JsonUtils;
 import okhttp3.Call;
 import sun.misc.BASE64Decoder;

@@ -107,9 +107,10 @@ public class MyApp extends LitePalApplication implements ServiceConnection {
 
         initInstance();
         Utils.init(this);
-        //initCrachHandler();
+        initCrachHandler();
         initHandlerThread();
         setRootPath();
+
     }
 
     private long lastTime;
@@ -286,7 +287,6 @@ public class MyApp extends LitePalApplication implements ServiceConnection {
         handlerThread = new HandlerThread("handlerThread", android.os.Process.THREAD_PRIORITY_BACKGROUND);
         handlerThread.start();
     }
-
 
 
     /*可以捕捉异常，并且将错误信息存在设备里。*/

@@ -18,6 +18,7 @@ import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -38,9 +39,12 @@ import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
 import com.qmuiteam.qmui.widget.dialog.QMUITipDialog;
 import com.zhy.http.okhttp.OkHttpUtils;
 
+import me.nereo.multi_image_selector.utils.FileUtils;
 import nss.mobile.video.R;
 
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import me.nereo.multi_image_selector.MultiImageSelector;
@@ -55,6 +59,8 @@ import nss.mobile.video.zxing.activity.CaptureActivity;
  */
 
 public abstract class BaseActivity extends AppCompatActivity implements View.OnClickListener, IDialog, IAlbum {
+    private static final int REQUEST_STORAGE_WRITE_ACCESS_PERMISSION = 110;
+    private static final int REQUEST_CAMERA = 100;
 
     private static final int CHOOSE_PHOTO = 0xffff;
     public static final String BUNDLE = "bundle";
@@ -72,6 +78,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
     private ArrayList<String> mSelectImgs;//当前选中多张图片；
     private QMUITipDialog tipSuccessDialog;
     private QMUITipDialog tipFailDialog;
+    private File mTmpFile;
 
 
     @Override
@@ -437,6 +444,21 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
+            case REQUEST_CAMERA:
+                if (resultCode == Activity.RESULT_OK) {
+                    if (mTmpFile != null) {
+                        onCameraResult(mTmpFile);
+                    }
+                } else {
+                    // delete tmp file
+                    while (mTmpFile != null && mTmpFile.exists()) {
+                        boolean success = mTmpFile.delete();
+                        if (success) {
+                            mTmpFile = null;
+                        }
+                    }
+                }
+                break;
             case REQUEST_CODE_DECODE:
                 if (resultCode != Activity.RESULT_OK) {
                     onResultCode(null, false);
@@ -467,6 +489,10 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
                 super.onActivityResult(requestCode, resultCode, data);
                 break;
         }
+    }
+
+    private void onCameraResult(File mTmpFile) {
+
     }
 
     public void onResultCode(String resultContent, boolean b) {
@@ -736,6 +762,43 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         Toast.makeText(this, msg, Toast.LENGTH_SHORT);
     }
 
+
+    /**
+     * Open camera
+     */
+    public void showCameraAction() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    getString(me.nereo.multi_image_selector.R.string.mis_permission_rationale_write_storage),
+                    REQUEST_STORAGE_WRITE_ACCESS_PERMISSION);
+        } else {
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                try {
+                    mTmpFile = FileUtils.createTmpFile(this);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (mTmpFile != null && mTmpFile.exists()) {
+                    Uri value = null;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION); //添加这一句表示对目标应用临时授权该Uri所代表的文件
+                        value = FileProvider.getUriForFile(this, "com.wuodj.myhome", mTmpFile);//通过FileProvider创建一个content类型的Uri
+                    } else {
+                        value = Uri.fromFile(mTmpFile);
+                    }
+
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, value);
+                    startActivityForResult(intent, REQUEST_CAMERA);
+                } else {
+                    Toast.makeText(this, me.nereo.multi_image_selector.R.string.mis_error_image_not_exist, Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(this, me.nereo.multi_image_selector.R.string.mis_msg_no_camera, Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 
 
     @Override
