@@ -40,9 +40,11 @@ import nss.mobile.video.bean.MobileKeyBean;
 import nss.mobile.video.info.UrlApi;
 import nss.mobile.video.service.UploadFileUtils;
 import nss.mobile.video.ui.HomeActivity;
+import nss.mobile.video.ui.video.UsbCameraActivity;
 import nss.mobile.video.utils.FileMeoryUtils;
 import nss.mobile.video.utils.JsonUtils;
 import nss.mobile.video.utils.preferences.CameraRotationCorrectionPreferences;
+import nss.mobile.video.utils.preferences.SettingPreferences;
 import nss.mobile.video.video.VideoCaptureActivity;
 import nss.mobile.video.video.VideoFile;
 import nss.mobile.video.video.configuration.CaptureConfiguration;
@@ -299,19 +301,25 @@ public class MainActivity extends BaseActivity {
         // TODO: 2018/11/4
         final CaptureConfiguration config = createCaptureConfiguration();
 
-
+        if (false) {
+            startActivity(UsbCameraActivity.class);
+            return;
+        }
         String product = Build.PRODUCT;
         String manufacturer = Build.MANUFACTURER;
-        if ("msm8953_64".equals(product) && "QUALCOMM".equals(manufacturer)) {
-            startActivity(HomeActivity.class);
-            finish();
-        } else {
+        if (SettingPreferences.getActivityFirst() == 0) {
             CameraRotationCorrectionPreferences.saveRotation(0);
             final Intent intent = new Intent(this, VideoCaptureActivity.class);
             intent.putExtra(VideoCaptureActivity.EXTRA_CAPTURE_CONFIGURATION, config);
             startActivityForResult(intent, 101);
             finish();
+        } else {
+            CameraRotationCorrectionPreferences.saveRotation(-1);
+
+            startActivity(HomeActivity.class);
+            finish();
         }
+
 
     }
 

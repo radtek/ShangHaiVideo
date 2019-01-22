@@ -69,19 +69,54 @@
                     android:paddingBottom="6dp"
                     android:paddingTop="6dp" />
             </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/setting_aty_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:clickable="true"
+                android:background="@color/colorWhite"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/margin_normal"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingTop="@dimen/margin_normal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="启动页选择" />
+
+                <TextView
+                    android:id="@+id/setting_aty_first_tv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:gravity="right"
+                    android:inputType="number"
+                    android:maxLength="6"
+                    android:paddingBottom="6dp"
+                    android:paddingTop="6dp" />
+            </LinearLayout>
+
+
             <TextView
                 android:id="@+id/setting_save_tv"
-                android:layout_gravity="right"
-                android:gravity="center"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"
-                android:text="保存"
-                android:layout_marginTop="@dimen/margin_normal"
-                android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:layout_marginLeft="@dimen/activity_horizontal_margin"
                 style="@style/btnNormalRadius"
                 android:layout_width="200dp"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/margin_normal"
+                android:gravity="center"
+                android:paddingBottom="8dp"
+                android:paddingTop="8dp"
+                android:text="保存" />
+
+
         </LinearLayout>
     </ScrollView>
 </ScrollView>

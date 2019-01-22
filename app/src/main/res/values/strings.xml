@@ -49,7 +49,6 @@
     <string name="cd_encoding_mirror">cd_encoding_mirror</string>
 
 
-
     <string name="open_serial_fail">打开串口失败！</string>
 
     <string-array name="features">
@@ -665,9 +664,9 @@
     <string name="hd_null_mask">匹配的数据为空</string>
     <string name="hd_more_than_20">起始信道和信道数之和不能大于20</string>
     <string-array name="membank">
-        <item >标签信息区</item>
-        <item >编码区</item>
-        <item >用户区</item>
+        <item>标签信息区</item>
+        <item>编码区</item>
+        <item>用户区</item>
     </string-array>
 
     <string name="press_finger">请按压手指。</string>

@@ -73,6 +73,8 @@ public class CardFragment extends BaseFragment {
     @BindView(R.id.frag_card_check_zhiwen_tv)
     View mCheckZhiwenTv;
 
+    boolean openUsbCardSuccess = false;
+
 
     private AsyncParseSFZ asyncParseSFZ;
     private byte[] mPersonHead;
@@ -127,10 +129,19 @@ public class CardFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (!SerialPortManager.getInstance().isOpen() && !SerialPortManager.getInstance().openSerialPort(CoreWise.type.sfz)) {
-            Toast.makeText(getContext(), R.string.open_serial_fail, Toast.LENGTH_SHORT).show();
+        try {
+            int model = CoreWise.getModel();
+            if (!SerialPortManager.getInstance().isOpen() && !SerialPortManager.getInstance().openSerialPort(CoreWise.type.sfz)) {
+                Toast.makeText(getContext(), R.string.open_serial_fail, Toast.LENGTH_SHORT).show();
+            }
+            openUsbCardSuccess = true;
+        } catch (Exception ex) {
+            displayMessageDialog("打开串口失败");
+            openUsbCardSuccess = false;
+            ex.printStackTrace();
+        } finally {
+            mScanner = new FingerprintScanner(getContext());
         }
-        mScanner = new FingerprintScanner(getContext());
     }
 
     private void initAuthOption() {
@@ -163,21 +174,31 @@ public class CardFragment extends BaseFragment {
             msg.what = ISVERIVY;
             mHandler.sendMessage(msg);
         } else if (v.getId() == mCheckUserTv.getId()) {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    showProgressDialog("正在读取数据...");
-                }
-            });
+            if (!openUsbCardSuccess) {
+                displayMessageDialog("设备初始化异常");
+                return;
+            }
+            showProgressDialog("正在读取数据...");
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        asyncParseSFZ.readSFZ(ParseSFZAPI.THIRD_GENERATION_CARD);
+                    } catch (Exception e) {
                         e.printStackTrace();
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                displayMessageDialog("启动设备失败！");
+                            }
+                        });
+
                     }
-                    asyncParseSFZ.readSFZ(ParseSFZAPI.THIRD_GENERATION_CARD);
                 }
             }).start();
         } else if (v.getId() == mCheckPhotoTv.getId()) {

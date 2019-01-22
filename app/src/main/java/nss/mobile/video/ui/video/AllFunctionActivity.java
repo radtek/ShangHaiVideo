@@ -57,6 +57,7 @@ public class AllFunctionActivity extends BaseActivity implements BaseQuickAdapte
         list.add(new FunctionAdapter.NormalFunction("视频直播", R.drawable.icon_video_file, 2));
         list.add(new FunctionAdapter.NormalFunction("录像分辨率调整", R.drawable.icon_video_file, 5));
         list.add(new FunctionAdapter.NormalFunction("设备ID设置", R.drawable.icon_video_file, 6));
+        list.add(new FunctionAdapter.NormalFunction("外接摄像头", R.drawable.icon_video_file, 7));
 
     }
 
@@ -85,6 +86,9 @@ public class AllFunctionActivity extends BaseActivity implements BaseQuickAdapte
                 break;
             case 6:
                 startActivity(OnlyKeySettingActivity.class);
+                break;
+            case 7:
+                startActivity(UsbCameraActivity.class);
                 break;
         }
     }
