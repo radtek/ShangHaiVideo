@@ -29,6 +29,9 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import nss.mobile.video.utils.preferences.CameraRotationCorrectionPreferences;
+import nss.mobile.video.utils.preferences.SettingPreferences;
+
 /**
  * 邮箱: 1076559197@qq.com | tauchen1990@gmail.com
  * <p/>
@@ -123,7 +126,12 @@ public final class CameraConfigurationManager {
         }
 
         /** 设置相机预览为竖屏 */
-        camera.setDisplayOrientation(90);
+        int rotation = CameraRotationCorrectionPreferences.getRotation();
+        if (rotation == 0) {
+            camera.setDisplayOrientation(90);
+        } else {
+            camera.setDisplayOrientation(270);
+        }
     }
 
     public Point getCameraResolution() {

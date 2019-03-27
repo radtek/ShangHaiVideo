@@ -1,8 +1,10 @@
 package nss.mobile.video.ui.video;
 
 import android.hardware.usb.UsbDevice;
+import android.os.Bundle;
 import android.view.Surface;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -20,9 +22,12 @@ import nss.mobile.video.R;
 import nss.mobile.video.base.BaseActivity;
 import nss.mobile.video.base.BindLayout;
 import nss.mobile.video.base.bind.BindView;
+import nss.mobile.video.card.authentication.aratek.SwitchUtil;
+import nss.mobile.video.utils.DataUtils;
+import nss.mobile.video.utils.DateUtils;
 import nss.mobile.video.video.VideoFile;
 
-@BindLayout(layoutRes = R.layout.activity_usb_camera, title = "USB摄像头")
+@BindLayout(layoutRes = R.layout.activity_usb_camera, title = "USB摄像头", bindTopBar = false)
 public class UsbCameraActivity extends BaseActivity {
 
     @BindView(R.id.textureView)
@@ -40,6 +45,12 @@ public class UsbCameraActivity extends BaseActivity {
     private boolean isCamera;//是否开始录像;
     private UVCCameraTextureView mUVCCameraView;
 
+    @Override
+    public void init(Bundle savedInstanceState) {
+//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        super.init(savedInstanceState);
+    }
 
     @Override
     public void initWidget() {
@@ -48,8 +59,8 @@ public class UsbCameraActivity extends BaseActivity {
 
         mActionIv.setOnClickListener(this);
 
-
     }
+
 
     private void init() {
         mUSBManager = USBCameraManager.getInstance();
@@ -57,24 +68,35 @@ public class UsbCameraActivity extends BaseActivity {
             // 插入USB设备
             @Override
             public void onAttachDev(UsbDevice device) {
-                if (mUSBManager == null || mUSBManager.getUsbDeviceCount() == 0) {
-                    displayMessageDialog("未检测到USB摄像头设备");
-                    mHintTv.setText("未检测到USB摄像头设备");
-                    return;
-                }
-                // 请求打开摄像头
-                if (!isRequest) {
-                    isRequest = true;
-                    if (mUSBManager != null) {
-                        mUSBManager.requestPermission(0);
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mHintTv.setVisibility(View.GONE);
+                int deviceId = device.getDeviceId();
+                int productId = device.getProductId();
+                int deviceClass = device.getDeviceClass();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mUSBManager == null || mUSBManager.getUsbDeviceCount() == 0) {
+                            displayMessageDialog("未检测到USB摄像头设备 ,deviceId =" + deviceId + "deviceClass = " + deviceClass + ",productId=" + productId + "," + mUSBManager.getUsbDeviceCount());
+                            mHintTv.setText("未检测到USB摄像头设备");
+                            return;
+                        }
+
+//                      // 请求打开摄像头
+                        if (!isRequest) {
+                            isRequest = true;
+                            if (mUSBManager != null) {
+                                mUSBManager.requestPermission(0);
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mHintTv.setVisibility(View.GONE);
+                                    }
+                                });
                             }
-                        });
+                        }
                     }
-                }
+                });
+
+
             }
 
 
@@ -84,11 +106,13 @@ public class UsbCameraActivity extends BaseActivity {
                 if (isRequest) {
                     // 关闭摄像头
                     isRequest = false;
-                    mUSBManager.closeCamera();
-                    displayMessageDialog(device.getDeviceName() + "已拨出");
+
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            mUSBManager.closeCamera();
+                            displayMessageDialog(device.getDeviceName() + "已拨出");
                             mHintTv.setText("设备已经拔出");
                             mHintTv.setVisibility(View.VISIBLE);
                         }
@@ -102,7 +126,13 @@ public class UsbCameraActivity extends BaseActivity {
             @Override
             public void onConnectDev(UsbDevice device, boolean isConnected) {
                 if (!isConnected) {
-                    displayMessageDialog("连接失败，请检查分辨率参数是否正确");
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            displayMessageDialog("连接失败，请检查分辨率参数是否正确");
+
+                        }
+                    });
                     isPreview = false;
                 } else {
                     isPreview = true;
@@ -116,6 +146,7 @@ public class UsbCameraActivity extends BaseActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        isPreview = false;
                         displayMessageDialog("连接失败");
                         mHintTv.setText("连接失败");
                         mHintTv.setVisibility(View.VISIBLE);
@@ -151,7 +182,13 @@ public class UsbCameraActivity extends BaseActivity {
             @Override
             public void onSurfaceDestroy(CameraViewInterface view, Surface surface) {
                 if (isPreview && mUSBManager.isCameraOpened()) {
-                    mUSBManager.stopPreview();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mUSBManager.stopPreview();
+                        }
+                    });
+
                     isPreview = false;
                 }
             }
@@ -166,7 +203,6 @@ public class UsbCameraActivity extends BaseActivity {
         if (mUSBManager != null) {
             mUSBManager.registerUSB();
         }
-
 
     }
 

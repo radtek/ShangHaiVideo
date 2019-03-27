@@ -1,9 +1,5 @@
 package android_serialport_api;
 
-import android.os.SystemClock;
-import android.util.Log;
-
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,12 +10,18 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
 
-import nss.mobile.video.card.provider.CoreWise;
-import nss.mobile.video.card.utils.DataUtils;
-import nss.mobile.video.card.utils.LocalLog;
+
+import android.os.SystemClock;
+import android.telephony.IccOpenLogicalChannelResponse;
+import android.util.Log;
+
+import nss.mobile.video.card.authentication.CoreWise;
+import nss.mobile.video.card.authentication.utils.DataUtils;
 
 /**
  * SerialPort Manager
+ *
+ * @author Administrator
  */
 public class SerialPortManager {
 
@@ -72,10 +74,11 @@ public class SerialPortManager {
 
     private byte[] mBuffer = new byte[50 * 1024];
 
-    private volatile int mCurrentSize = 0;  //添加volatile，防止死锁
+    //添加volatile，防止死锁
+    private volatile int mCurrentSize = 0;
 
     private LooperBuffer looperBuffer;
-/**/
+    /**/
 
     private ReadThread mReadThread;
     private ReadUHFThread mReadUHFThread;
@@ -83,6 +86,7 @@ public class SerialPortManager {
 
     /**
      * 获取该类的实例对象，为单例（get single instance）
+     *
      * @return
      */
     public static SerialPortManager getInstance() {
@@ -137,34 +141,21 @@ public class SerialPortManager {
         if (mSerialPort == null) {
             // 上电
             try {
-                switch (CoreWise.getModel()) {
+                switch (CoreWise.getAndroidVersion()) {
 
-                    case CoreWise.device.A370://0: A370
+                    case CoreWise.deviceSysVersion.O://0: A370
                         setUpGpio();
-                        if (isFBIDevice())
+                        if (isFBIDevice()) {
                             setDownGpioFbi();
-                        Log.i("whw", "setUpGpio status=" + getGpioStatus());
+                        }
+                        //Log.i("whw", "setUpGpio status=" + getGpioStatus());
                         mSerialPort = new SerialPort(new File(PATH), BAUDRATE, 0);
-
-                        break;
-                    case CoreWise.device.CFON640://1:CFON640
-                        setUpGpio();
-                        if (isFBIDevice())
-                            setDownGpioFbi();
-                        Log.i("whw", "setUpGpio status=" + getGpioStatus());
-                        mSerialPort = new SerialPort(new File(PATH), BAUDRATE, 0);
-
                         break;
                     case CoreWise.device.other: //其他机型
 
                         break;
-                    case CoreWise.device.U3_640:  //U3_640
+                    case CoreWise.deviceSysVersion.U:  //U3_640
                         setUpGpioSTM32();
-                        mSerialPort = new SerialPort(new File(DEFAULT_PATH), DEFAULT_BAUDRATE, 0);
-                        break;
-
-                    case CoreWise.device.U3_A370:  //U3_A370
-                        setGpioSTM32(GPIO_DEV_SFZ, UP);
                         mSerialPort = new SerialPort(new File(DEFAULT_PATH), DEFAULT_BAUDRATE, 0);
                         break;
                 }
@@ -172,7 +163,9 @@ public class SerialPortManager {
                 e.printStackTrace();
                 return false;
             }
-
+            if (mSerialPort == null) {
+                return false;
+            }
             mOutputStream = mSerialPort.getOutputStream();
             mInputStream = mSerialPort.getInputStream();
             switch (type) {
@@ -208,48 +201,42 @@ public class SerialPortManager {
      * 关闭串口(close SerialPort)
      */
     public void closeSerialPort() {
-        if (mReadThread != null)
+        if (mReadThread != null) {
             mReadThread.interrupt();
-        mReadThread = null;
+            mReadThread = null;
+        }
 
-        if (mReadSFZThread != null)
+        if (mReadSFZThread != null) {
             mReadSFZThread.interrupt();
-        mReadSFZThread = null;
+            mReadSFZThread = null;
+        }
 
-        if (mReadUHFThread != null)
+        if (mReadUHFThread != null) {
             mReadUHFThread.interrupt();
-        mReadUHFThread = null;
+            mReadUHFThread = null;
+        }
 
         try {
-            switch (CoreWise.getModel()) {
+            switch (CoreWise.getAndroidVersion()) {
 
-                case CoreWise.device.A370://0: A370
+                case CoreWise.deviceSysVersion.O://0: A370
                     // 断电
                     setDownGpio();
                     setDownGpioSTM32();
                     break;
-                case CoreWise.device.CFON640://1:CFON640
 
-                    // 断电
-                    setDownGpio();
-                    setDownGpioSTM32();
-                    break;
                 case CoreWise.device.other: //其他机型
 
                     break;
-                case CoreWise.device.U3_640:  //U3_640
+                case CoreWise.deviceSysVersion.U:  //U3_640
                     // 断电
-                    setDownGpio();
+                    //setDownGpio();
                     setDownGpioSTM32();
-                    break;
-
-                case CoreWise.device.U3_A370:  //U3_A370
-                    setGpioSTM32(GPIO_DEV_SFZ, DOWN);
                     break;
             }
 
 
-            Log.i("whw", "setDownGpio status=" + getGpioStatus());
+            //Log.i("whw", "setDownGpio status=" + getGpioStatus());
         } catch (IOException e1) {
             e1.printStackTrace();
         }
@@ -438,10 +425,10 @@ public class SerialPortManager {
             SystemClock.sleep(100);
             // openSerialPort2();
         }
-        LocalLog.setLogPath("/sdcard/SFZ/");
-        LocalLog.setFileName("SFZ");
-        LocalLog.setDefalutTag("SFZ");
-        LocalLog.i("测试数据不全---" + mCurrentSize + "--内容--" + DataUtils.bytesToHexString(buffer));
+        //LocalLog.setLogPath("/sdcard/SFZ/");
+        //LocalLog.setFileName("SFZ");
+        //LocalLog.setDefalutTag("SFZ");
+        //LocalLog.i("测试数据不全---" + mCurrentSize + "--内容--" + DataUtils.bytesToHexString(buffer));
         return mCurrentSize;
     }
 
@@ -531,22 +518,25 @@ public class SerialPortManager {
         fw.close();
     }
 
-    @Deprecated
-    private void setUpGpioSTM32() throws IOException {
+    public void setUpGpioSTM32() throws IOException {
         FileOutputStream fw = new FileOutputStream(GPIO_DEV_STM32);
         fw.write(UP);
         fw.close();
+        Log.i("STM32", "--------------STM32---------上电了");
+
     }
 
-    @Deprecated
-    private void setDownGpioSTM32() throws IOException {
+
+    public void setDownGpioSTM32() throws IOException {
         FileOutputStream fw = new FileOutputStream(GPIO_DEV_STM32);
         fw.write(DOWN);
         fw.close();
+        Log.i("STM32", "--------------STM32---------下电了");
+
     }
 
     @Deprecated
-    private boolean openSerialPort2() {
+    public boolean openSerialPort2() {
         if (mSerialPort == null) {
             try {
                 mSerialPort = new SerialPort(new File(PATH), BAUDRATE, 0);
@@ -644,10 +634,11 @@ public class SerialPortManager {
     private boolean isFBIDevice() {
         String path = "/sys/class/fbicode_gpios/fbicoe_state/control";
         File file = new File(path);
-        if (file.exists())
+        if (file.exists()) {
             return true;
-        else
+        } else {
             return false;
+        }
     }
 
     public String getGpioStatus() throws IOException {
@@ -679,7 +670,9 @@ public class SerialPortManager {
             while (!isInterrupted()) {
                 int length = 0;
                 try {
-                    if (mInputStream == null) return;
+                    if (mInputStream == null) {
+                        return;
+                    }
                     length = mInputStream.read(buffer);
                     if (length > 0) {
                         if (looperBuffer != null) {
@@ -711,18 +704,15 @@ public class SerialPortManager {
                 byte[] buffer = new byte[2325];
 
                 try {
-                    if (mInputStream == null) return;
+                    if (mInputStream == null) {
+                        return;
+                    }
                     if (mInputStream.available() > 0 == false) {
                         continue;
                     } else {
-                        switch (CoreWise.getModel()) {
+                        switch (CoreWise.getAndroidVersion()) {
 
-                            case CoreWise.device.A370://0: A370
-                                Thread.sleep(200);   //此处延时确保一次性获取数据，最低190ms
-
-                                break;
-                            case CoreWise.device.CFON640://1:CFON640
-
+                            case CoreWise.deviceSysVersion.O://0: A370
                                 Thread.sleep(200);   //此处延时确保一次性获取数据，最低190ms
 
                                 break;
@@ -730,14 +720,10 @@ public class SerialPortManager {
                                 Thread.sleep(200);   //此处延时确保一次性获取数据，最低190ms
 
                                 break;
-                            case CoreWise.device.U3_640:  //U3_640
+                            case CoreWise.deviceSysVersion.U:  //U3_640
                                 Thread.sleep(200);   //此处延时确保一次性获取数据，最低190ms
                                 break;
 
-                            case CoreWise.device.U3_A370:  //U3_A370
-                                Thread.sleep(300);   //此处延时确保一次性获取数据，最低190ms
-
-                                break;
                         }
                     }
 
@@ -776,7 +762,9 @@ public class SerialPortManager {
             while (!isInterrupted()) {
                 int length = 0;
                 try {
-                    if (mInputStream == null) return;
+                    if (mInputStream == null) {
+                        return;
+                    }
                     if (mInputStream.available() > 0 == false) {
                         continue;
                     } else {

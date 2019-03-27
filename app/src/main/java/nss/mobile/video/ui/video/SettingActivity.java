@@ -8,11 +8,16 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.qmuiteam.qmui.widget.dialog.QMUIBottomSheet;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialog;
+import com.qmuiteam.qmui.widget.dialog.QMUIDialogAction;
 
 import nss.mobile.video.R;
 import nss.mobile.video.base.BaseActivity;
 import nss.mobile.video.base.BindLayout;
 import nss.mobile.video.base.bind.BindView;
+import nss.mobile.video.bean.MobileKeyBean;
+import nss.mobile.video.ui.SnActivity;
+import nss.mobile.video.utils.SnCheckHelper;
 import nss.mobile.video.utils.preferences.SettingPreferences;
 
 @BindLayout(layoutRes = R.layout.activity_setting, title = "基本设置")
@@ -49,6 +54,40 @@ public class SettingActivity extends BaseActivity implements CompoundButton.OnCh
         int activityFirst = SettingPreferences.getActivityFirst();
         mAtyFirstTag = activityFirst;
         setFirstAtyName(activityFirst);
+
+        checkSn();
+    }
+
+    private void checkSn() {
+        displayLoadingDialog("检测设备序列号中");
+        MobileKeyBean last = MobileKeyBean.getLast();
+        String mobileKey = last.getMobileKey();
+        SnCheckHelper.checkSn(mobileKey, new SnCheckHelper.OnSnCheckListener() {
+            @Override
+            public void onSnCheckSuccess(String sn) {
+                cancelLoadingDialog();
+            }
+
+            @Override
+            public void onSnCheckFailed(String error) {
+                cancelLoadingDialog();
+                if (isFinishing()) {
+                    return;
+                }
+                QMUIDialog show = new QMUIDialog.MessageDialogBuilder(SettingActivity.this)
+                        .setTitle("提示")
+                        .setMessage(error)
+                        .addAction("确定", new QMUIDialogAction.ActionListener() {
+                            @Override
+                            public void onClick(QMUIDialog dialog, int index) {
+                                finish();
+                                dialog.cancel();
+                            }
+                        })
+                        .show();
+                show.setCancelable(false);
+            }
+        });
     }
 
     private void setFirstAtyName(int activityFirst) {

@@ -37,6 +37,7 @@ import nss.mobile.video.R;
 import nss.mobile.video.base.BaseActivity;
 import nss.mobile.video.base.BindLayout;
 import nss.mobile.video.base.bind.BindView;
+import nss.mobile.video.bean.AliFileBean;
 import nss.mobile.video.bean.MemoryBean;
 import nss.mobile.video.event.FileMemoryEvent;
 import nss.mobile.video.ui.SnActivity;
@@ -202,6 +203,11 @@ public class VideoCaptureActivity extends BaseActivity implements RecordingButto
 
     @Override
     public void onRecordingStarted() {
+        AliFileBean aliFileBean = new AliFileBean();
+        aliFileBean.setFilePath(mVideoRecorder.getNowSaveFile().getAbsolutePath());
+        long sDate = System.currentTimeMillis()/1000;
+        aliFileBean.setsDate(sDate);
+        aliFileBean.saveSingle();
         MyApp.getInstance().startCaseFileMemoryThread();
         mVideoCaptureView.updateUIRecordingOngoing();
         isVideoing = true;
@@ -262,6 +268,12 @@ public class VideoCaptureActivity extends BaseActivity implements RecordingButto
         if (message != null) {
             Toast.makeText(this, message, Toast.LENGTH_LONG).show();
         }
+        AliFileBean file = AliFileBean.getFile(mVideoRecorder.getNowSaveFile().getAbsolutePath());
+        if (file != null) {
+            long e = System.currentTimeMillis() / 1000;
+            file.seteDate(e);
+            file.saveSingle();
+        }
         MyApp.getInstance().stopCaseFileMemoryThread();
         mVideoCaptureView.updateUIRecordingFinished(getVideoThumbnail());
         mVideoRecorder.setVideoFile(new VideoFile(null));
@@ -287,7 +299,7 @@ public class VideoCaptureActivity extends BaseActivity implements RecordingButto
     }
 
     private void finishError(final String message) {
-        Toast.makeText(getApplicationContext(), "Can't capture video: " + message, Toast.LENGTH_LONG).show();
+//        Toast.makeText(getApplicationContext(), "Can't capture video: " + message, Toast.LENGTH_LONG).show();
 
         final Intent result = new Intent();
         result.putExtra(EXTRA_ERROR_MESSAGE, message);

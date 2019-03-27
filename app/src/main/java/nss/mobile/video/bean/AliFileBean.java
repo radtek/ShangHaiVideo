@@ -33,6 +33,11 @@ public class AliFileBean extends LitePalSupport implements IFile {
     private String aliVideoId;
     private String videVod; //播放地址
 
+    private long sDate;//录像开始时间：
+    private long eDate;//录像结束时间;
+
+
+
 
     private int submitServerStatus;//上传到自有服务器状态 -1失败，0，未上传，1上传成功
 
@@ -66,6 +71,22 @@ public class AliFileBean extends LitePalSupport implements IFile {
         }
         AliFileBean aliFileBean = ts.get(0);
         update(aliFileBean.getId());
+    }
+
+    public long getsDate() {
+        return sDate;
+    }
+
+    public void setsDate(long sDate) {
+        this.sDate = sDate;
+    }
+
+    public long geteDate() {
+        return eDate;
+    }
+
+    public void seteDate(long eDate) {
+        this.eDate = eDate;
     }
 
     public String getAliVideoId() {
@@ -149,7 +170,7 @@ public class AliFileBean extends LitePalSupport implements IFile {
 
     @Override
     public CharSequence getUpStatus() {
-        return upstatus;
+        return upstatus == null?STATUS_NORMAL : upstatus;
     }
 
     @Override

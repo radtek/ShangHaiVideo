@@ -20,6 +20,7 @@ import nss.mobile.video.base.BindLayout;
 import nss.mobile.video.base.bind.BindView;
 import nss.mobile.video.bean.MobileKeyBean;
 import nss.mobile.video.service.UploadFileUtils;
+import nss.mobile.video.utils.SnCheckHelper;
 
 @BindLayout(layoutRes = R.layout.activity_only_key_setting, title = "设备id设置")
 public class OnlyKeySettingActivity extends BaseActivity {
@@ -35,12 +36,19 @@ public class OnlyKeySettingActivity extends BaseActivity {
 
 
     @Override
+    public void initData() {
+        super.initData();
+    }
+
+    @Override
     public void initWidget() {
         super.initWidget();
         mScanningActionTv.setOnClickListener(this);
         mSaveActionTv.setOnClickListener(this);
         MobileKeyBean last = MobileKeyBean.getLast();
-        mKeyEt.setText(last.getMobileKey());
+        if (last != null) {
+            mKeyEt.setText(last.getMobileKey());
+        }
 
     }
 
@@ -78,13 +86,26 @@ public class OnlyKeySettingActivity extends BaseActivity {
                 displayMessageDialog("密码不正确");
                 return;
             }
+            displayLoadingDialog("检测设备号中...");
+            SnCheckHelper.checkSn(key, new SnCheckHelper.OnSnCheckListener() {
+                @Override
+                public void onSnCheckSuccess(String sn) {
+                    MobileKeyBean k = new MobileKeyBean();
+                    k.setMobileKey(key);
+                    k.setCreateDate(System.currentTimeMillis());
+                    k.save();
+                    UploadFileUtils.setmobileId(key + "_");
+                    displayMessageDialog("设置成功");
+                    cancelLoadingDialog();
+                }
 
-            MobileKeyBean k = new MobileKeyBean();
-            k.setMobileKey(key);
-            k.setCreateDate(System.currentTimeMillis());
-            k.save();
-            UploadFileUtils.setmobileId(key + "_");
-            displayMessageDialog("设置成功");
+                @Override
+                public void onSnCheckFailed(String error) {
+                    cancelLoadingDialog();
+                    displayMessageDialog(error);
+                }
+            });
+
 
         }
     }
@@ -119,7 +140,7 @@ public class OnlyKeySettingActivity extends BaseActivity {
         }
         new QMUIDialog.MessageDialogBuilder(this)
                 .setTitle("提示")
-                .setMessage("扫描结果为:"+resultContent+"\r\n确定使用吗?")
+                .setMessage("扫描结果为:" + resultContent + "\r\n确定使用吗?")
                 .addAction("取消", new QMUIDialogAction.ActionListener() {
                     @Override
                     public void onClick(QMUIDialog dialog, int index) {

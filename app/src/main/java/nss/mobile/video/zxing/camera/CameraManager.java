@@ -16,15 +16,20 @@
 
 package nss.mobile.video.zxing.camera;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Display;
+import android.view.Surface;
 import android.view.SurfaceHolder;
+import android.view.WindowManager;
 
 
+import nss.mobile.video.utils.ActivityUtils;
 import nss.mobile.video.zxing.camera.open.OpenCameraInterface;
 
 import java.io.IOException;
@@ -59,6 +64,7 @@ public class CameraManager {
         this.context = context;
         this.configManager = new CameraConfigurationManager(context);
         previewCallback = new PreviewCallback(configManager);
+
     }
 
     /**
@@ -83,6 +89,7 @@ public class CameraManager {
             }
             camera = theCamera;
         }
+//        setCameraDisplayOrientation(ActivityUtils.top(), theCamera);
         theCamera.setPreviewDisplay(holder);
 
         if (!initialized) {
@@ -114,6 +121,15 @@ public class CameraManager {
             }
         }
 
+    }
+
+
+    private int getRotationCorrection(Display display) {
+        int displayRotation = 180;
+        Camera.CameraInfo camInfo = new Camera.CameraInfo();
+        Camera.getCameraInfo(0, camInfo);
+        int ori = camInfo.orientation;
+        return (ori - displayRotation + 360) % 360;
     }
 
     /**

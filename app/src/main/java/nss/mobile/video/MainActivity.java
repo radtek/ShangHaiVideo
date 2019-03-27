@@ -307,7 +307,7 @@ public class MainActivity extends BaseActivity {
         }
         String product = Build.PRODUCT;
         String manufacturer = Build.MANUFACTURER;
-        if (SettingPreferences.getActivityFirst() == 0) {
+        if (SettingPreferences.getActivityFirst() == SettingPreferences.ACTIVITY_VIDEO) {
             CameraRotationCorrectionPreferences.saveRotation(0);
             final Intent intent = new Intent(this, VideoCaptureActivity.class);
             intent.putExtra(VideoCaptureActivity.EXTRA_CAPTURE_CONFIGURATION, config);
@@ -315,7 +315,6 @@ public class MainActivity extends BaseActivity {
             finish();
         } else {
             CameraRotationCorrectionPreferences.saveRotation(-1);
-
             startActivity(HomeActivity.class);
             finish();
         }

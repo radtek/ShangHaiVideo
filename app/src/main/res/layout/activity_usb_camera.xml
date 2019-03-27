@@ -14,14 +14,14 @@
 
 
     <ImageView
-        android:clickable="true"
         android:id="@+id/usb_camera_action_iv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:clickable="true"
         android:padding="@dimen/margin_normal"
         android:paddingTop="@dimen/margin_normal"
-        android:layout_centerHorizontal="true"
         android:src="@drawable/video_action" />
 
 
@@ -33,4 +33,8 @@
         android:text="请插入外接设备"
         android:textColor="@color/text_white_color"
         android:visibility="visible" />
+
+
+
+
 </RelativeLayout>

@@ -2,6 +2,8 @@ package nss.mobile.video.utils;
 
 
 
+import android.app.Activity;
+
 import java.util.ArrayList;
 
 import nss.mobile.video.base.BaseActivity;
@@ -41,4 +43,5 @@ public class ActivityUtils {
             baseActivity.finish();
         }
     }
+
 }

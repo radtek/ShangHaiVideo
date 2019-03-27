@@ -1,7 +1,6 @@
 package nss.mobile.video;
 
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -18,8 +17,6 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.alibaba.sdk.android.oss.model.PutObjectRequest;
-import com.alibaba.sdk.android.oss.model.PutObjectResult;
 import com.qiniu.pili.droid.streaming.StreamingEnv;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
 import com.zhy.http.okhttp.OkHttpUtils;
@@ -31,30 +28,27 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.litepal.LitePalApplication;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import nss.mobile.video.bean.AliFileBean;
 import nss.mobile.video.bean.MemoryBean;
 import nss.mobile.video.bean.MobileKeyBean;
-import nss.mobile.video.card.exception.CrashHandler;
-import nss.mobile.video.card.utils.Utils;
+import nss.mobile.video.card.authentication.utils.CrashHandler;
 import nss.mobile.video.event.FileMemoryEvent;
+import nss.mobile.video.http.OkHttpHeader;
 import nss.mobile.video.http.OkHttpHelper;
-import nss.mobile.video.http.ali.AliOssToken;
 import nss.mobile.video.info.UrlApi;
 import nss.mobile.video.receiver.NetworkStatus;
 import nss.mobile.video.service.ali.AliUploadFileService;
 import nss.mobile.video.utils.FileMeoryUtils;
 import nss.mobile.video.utils.LocationUtils;
-import nss.mobile.video.utils.UnitHelper;
 import nss.mobile.video.video.VideoFile;
 import okhttp3.Call;
+import okhttp3.OkHttpClient;
 
 
 /**
@@ -104,9 +98,13 @@ public class MyApp extends LitePalApplication implements ServiceConnection {
         bindService(intent, this, BIND_AUTO_CREATE);
         EventBus.getDefault().register(this);
 
+        OkHttpClient client = new OkHttpClient.Builder()
+                .readTimeout(30, TimeUnit.SECONDS)
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS).build();
 
+        OkHttpUtils.initClient(client);
         initInstance();
-        Utils.init(this);
         initCrachHandler();
         initHandlerThread();
         setRootPath();

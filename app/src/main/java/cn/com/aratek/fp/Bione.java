@@ -209,6 +209,8 @@ public class Bione {
                 idcardVerifyThreshold = threshold;
                 idcardIdentifyThreshold = threshold;
             }
+
         }
     }
+
 }

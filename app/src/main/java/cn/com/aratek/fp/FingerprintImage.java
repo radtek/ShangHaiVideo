@@ -1,7 +1,7 @@
 package cn.com.aratek.fp;
 
 
-import nss.mobile.video.card.WSQdemo;
+import nss.mobile.video.card.Cognaxon.WSQdemo;
 
 /**
  * 时间：2018/10/10

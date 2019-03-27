@@ -34,16 +34,30 @@
                     android:layout_height="100dp"
                     android:src="@drawable/icon_id" />
 
-                <ImageView
-                    android:id="@+id/frag_card_zhiwen_iv"
+                <FrameLayout
                     android:layout_width="100dp"
                     android:layout_height="100dp"
-                    android:layout_marginLeft="20dp"
-                    android:src="@drawable/icon_zhi_wen" />
+                    android:layout_marginLeft="20dp">
+
+                    <ImageView
+                        android:id="@+id/frag_card_zhiwen_iv"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:src="@drawable/icon_zhi_wen" />
+                    <ImageView
+                        android:id="@+id/frag_card_zhiwen_check_iv"
+                        android:layout_gravity="center"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </FrameLayout>
+
             </LinearLayout>
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/frag_card_rv"
                     android:layout_width="match_parent"
@@ -51,8 +65,22 @@
                     android:layout_marginTop="@dimen/activity_vertical_margin" />
             </RelativeLayout>
 
+
+            <TextView
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:id="@+id/hint"
+                android:layout_height="wrap_content" />
+
         </LinearLayout>
     </ScrollView>
+
+    <TextView
+        android:id="@+id/frag_card_fp_hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/frag_card_nav"
+        android:layout_centerInParent="true" />
 
     <LinearLayout
         android:id="@+id/frag_card_nav"
@@ -67,21 +95,23 @@
             android:id="@+id/frag_card_check_user_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="#ffb34a"
+            android:background="@drawable/s_org_btn"
+            android:clickable="true"
             android:padding="@dimen/margin_normal"
-            android:text="身份比对"
+            android:text="身份识别"
             android:textColor="@color/text_white_color" />
 
         <TextView
-            android:visibility="visible"
             android:id="@+id/frag_card_check_zhiwen_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/margin_normal"
-            android:background="#ffb34a"
+            android:background="@drawable/s_org_btn"
+            android:clickable="true"
             android:padding="@dimen/margin_normal"
             android:text="指纹对比"
-            android:textColor="@color/text_white_color" />
+            android:textColor="@color/text_white_color"
+            android:visibility="visible" />
 
 
         <TextView
@@ -89,11 +119,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/margin_normal"
-            android:background="#ffb34a"
+            android:background="@drawable/s_org_btn"
+            android:clickable="true"
             android:padding="@dimen/margin_normal"
             android:text="人像对比"
             android:textColor="@color/text_white_color" />
 
     </LinearLayout>
+
 
 </RelativeLayout>

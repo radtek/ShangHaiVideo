@@ -107,6 +107,8 @@ android {
 allprojects {
     repositories {
         maven { url "https://jitpack.io" }
+        maven { url 'http://raw.github.com/saki4510t/libcommon/master/repository/' }
+
     }
 
 //    configurations.all {
@@ -149,8 +151,11 @@ dependencies {
     compile 'commons-net:commons-net:3.6'
     compile 'com.aliyun.dpa:oss-android-sdk:2.9.2'
     implementation files('libs/BASE64Encoder.jar')
+
     implementation files('libs/AraBMApiDev.jar')
     implementation files('libs/AraBMApiIdcard.jar')
     implementation files('libs/idcardapi.jar')
     implementation files('libs/ZKLiveFaceService5.6.jar')
+    compile 'com.github.jiangdongguo:AndroidUSBCamera:1.3.8'
+    implementation files('libs/syno_otgkey.jar')
 }

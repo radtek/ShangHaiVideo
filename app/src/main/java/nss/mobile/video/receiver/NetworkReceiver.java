@@ -62,6 +62,7 @@ public class NetworkReceiver extends BroadcastReceiver {
 
     }
     private NetworkStatus networkStatus = new NetworkStatus();
+
     private void dismissNetwork(Context context) {
         networkStatus.setConnect(false);
         networkStatus.setTime(System.currentTimeMillis());

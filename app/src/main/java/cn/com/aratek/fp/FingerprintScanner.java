@@ -12,6 +12,7 @@ import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class FingerprintScanner {
     public static final int DEVICE_REOPEN = -1013;
     public static final int NO_FINGER = -2005;
     private static final String TAG = "FingerprintScanner";
-    private static final String ACTION_USB_PERMISSION = "cn.com.aratek.cn.com.aratek.fp.USB_PERMISSION";
+    private static final String ACTION_USB_PERMISSION = "cn.com.aratek.fp.USB_PERMISSION";
     private Context mContext;
     private OnUsbPermissionGrantedListener mOnUsbPermissionGrantedListener;
     private UsbManager mUsbManager;
@@ -58,7 +59,7 @@ public class FingerprintScanner {
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            if("cn.com.aratek.cn.com.aratek.fp.USB_PERMISSION".equals(action)) {
+            if("cn.com.aratek.fp.USB_PERMISSION".equals(action)) {
                 synchronized(this) {
                     UsbDevice device = (UsbDevice)intent.getParcelableExtra("device");
                     if(!intent.getBooleanExtra("permission", false)) {
@@ -146,7 +147,7 @@ public class FingerprintScanner {
                 this.mUsbManager = (UsbManager)context.getSystemService("usb");
             }
         }
-        initDevice();
+        //initDevice();
     }
 
     /**
@@ -169,14 +170,14 @@ public class FingerprintScanner {
 
             if(!this.mReceiverRegistered) {
                 IntentFilter filter = new IntentFilter();
-                filter.addAction("cn.com.aratek.cn.com.aratek.fp.USB_PERMISSION");
+                filter.addAction("cn.com.aratek.fp.USB_PERMISSION");
                 filter.addAction("android.hardware.usb.action.USB_DEVICE_ATTACHED");
                 filter.addAction("android.hardware.usb.action.USB_DEVICE_DETACHED");
                 this.mContext.registerReceiver(this.mReceiver, filter);
                 this.mReceiverRegistered = true;
             }
 
-            PendingIntent pi = PendingIntent.getBroadcast(this.mContext, 0, new Intent("cn.com.aratek.cn.com.aratek.fp.USB_PERMISSION"), 0);
+            PendingIntent pi = PendingIntent.getBroadcast(this.mContext, 0, new Intent("cn.com.aratek.fp.USB_PERMISSION"), 0);
             this.mUsbManager.requestPermission((UsbDevice)((Map.Entry)devices.entrySet().iterator().next()).getValue(), pi);
             int i = this.openNative();
 
@@ -196,7 +197,7 @@ public class FingerprintScanner {
         if(devices != null && !devices.isEmpty()) {
             if(!this.mReceiverRegistered) {
                 IntentFilter filter = new IntentFilter();
-                filter.addAction("cn.com.aratek.cn.com.aratek.fp.USB_PERMISSION");
+                filter.addAction("cn.com.aratek.fp.USB_PERMISSION");
                 filter.addAction("android.hardware.usb.action.USB_DEVICE_ATTACHED");
                 filter.addAction("android.hardware.usb.action.USB_DEVICE_DETACHED");
                 this.mContext.registerReceiver(this.mReceiver, filter);

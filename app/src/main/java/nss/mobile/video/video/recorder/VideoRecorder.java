@@ -24,6 +24,7 @@ import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.SurfaceHolder;
 
+import nss.mobile.video.bean.AliFileBean;
 import nss.mobile.video.utils.ActivityUtils;
 import nss.mobile.video.video.CLog;
 import nss.mobile.video.video.VideoFile;
@@ -43,8 +44,8 @@ public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
     private CameraWrapper mCameraWrapper;
     private CapturePreview mVideoCapturePreview;
 
-    private  CaptureConfiguration mCaptureConfiguration;
-    private  VideoFile mVideoFile;
+    private CaptureConfiguration mCaptureConfiguration;
+    private VideoFile mVideoFile;
 
     private MediaRecorder mRecorder;
     private boolean mRecording = false;
@@ -156,7 +157,7 @@ public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
 
         recorder.setProfile(baseProfile);
         recorder.setMaxDuration(mCaptureConfiguration.getMaxCaptureDuration());
-         nowSaveFile = mVideoFile.getFile();
+        nowSaveFile = mVideoFile.getFile();
 //        recorder.setOutputFile(nowSaveFile);
         Log.i(TAG, "configureMediaRecorder: " + nowSaveFile.getAbsolutePath());
         recorder.setOutputFile(nowSaveFile.getAbsolutePath());
@@ -239,7 +240,8 @@ public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
         releaseRecorderResources();
         CLog.d(CLog.RECORDER, "Released all resources");
     }
-    public boolean isRelease(){
+
+    public boolean isRelease() {
         return mCameraWrapper == null;
     }
 
@@ -276,9 +278,10 @@ public class VideoRecorder implements OnInfoListener, CapturePreviewInterface {
         this.mVideoCapturePreview = videoCapturePreview;
     }
 
-    public File getNowSaveFile(){
+    public File getNowSaveFile() {
         return nowSaveFile;
     }
+
     public void setVideoFile(VideoFile videoFile) {
         this.mVideoFile = videoFile;
     }

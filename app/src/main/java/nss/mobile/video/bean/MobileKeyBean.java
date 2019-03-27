@@ -20,16 +20,16 @@ public class MobileKeyBean extends LitePalSupport {
     private String mobileKey;
     private Long createDate;
 
-    public static MobileKeyBean getLast(){
+    public static MobileKeyBean getLast() {
         return LitePal.findLast(MobileKeyBean.class);
     }
 
-    public static void saveNormalKey(Context context){
+    public static void saveNormalKey(Context context) {
         MobileKeyBean last = new MobileKeyBean();
         last.setCreateDate(System.currentTimeMillis());
-        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        @SuppressLint("MissingPermission") String imei = telephonyManager.getDeviceId();
-        last.setMobileKey(imei);
+//        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+//        @SuppressLint("MissingPermission") String imei = telephonyManager.getDeviceId();
+        last.setMobileKey("-1");
         last.save();
     }
 

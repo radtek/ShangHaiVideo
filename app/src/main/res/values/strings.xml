@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">移动取证</string>
     <string name="wifi_connect_loading">wifi连接中...</string>
     <string name="wifi_connect_failed">wifi连接失败</string>
@@ -50,8 +50,19 @@
 
 
     <string name="open_serial_fail">打开串口失败！</string>
+    <string name="open_serial_success">打开串口成功！</string>
 
     <string-array name="features">
+
+        <item>条码</item>
+        <item>身份证</item>
+        <item>慧讯超高频</item>
+        <item>指纹(USB)</item>
+        <item>指纹(640)</item>
+        <item>M1卡</item>
+    </string-array>
+
+    <string-array name="features2">
         <item>北斗</item>
         <item>M1卡</item>
         <item>条码</item>
@@ -90,7 +101,9 @@
     <string name="baudrate">波特率：</string>
     <string name="version">版本</string>
     <string name="stop_connect">断开连接</string>
-    <string name="fingerprint">指纹</string>
+    <!--
+        <string name="fingerprint">指纹</string>
+    -->
     <string name="loop_read">循环读取</string>
     <string name="barcode">Bar Code</string>
     <string name="rfid">RFID</string>
@@ -100,7 +113,6 @@
     <!-- sfz activity -->
     <string name="read_sfz">Reader</string>
     <string name="sequential_sfz">Continuous reader</string>
-    <string name="stop">Stop</string>
     <string name="clear_sfz">Clear</string>
     <string name="read_card_fail">Did not find a card</string>
     <string name="read_card_success">Successful reader</string>
@@ -187,11 +199,16 @@
     <string name="bluetooth_no_connect">蓝牙未连接!</string>
 
     <!-- barcode -->
+
+    <string name="scannersum">总共: %1$s</string>
+    <string name="scannersuccess">成功: %1$s</string>
+    <string name="scannersuccessrate">成功率: %1$s</string>
+
     <string name="open_success">open bar code success</string>
     <string name="open_fail">open bar code fail</string>
     <string name="close_success">close bar code success</string>
     <string name="close_fail">close bar code fail</string>
-    <string name="scan">scan</string>
+    <string name="scan">单扫</string>
     <string name="scan_parameter">Scan Configuration Parameter</string>
     <string name="close_scan">close</string>
     <string name="setting_power">功率设置</string>
@@ -272,6 +289,37 @@
     <string name="upu_fics_postal_text">UPU FICS Postal</string>
     <string name="set_success">Set successfully</string>
     <string name="set_fail">Failed to set</string>
+    <string name="scanner_settings_general">General settings</string>
+    <string name="scanner_settings_switch">Is enabled or not</string>
+    <string name="scanner_settings_on">Enabled</string>
+    <string name="scanner_settings_off">Disabled</string>
+    <string name="scanner_settings_input_mode">Input mode</string>
+    <string name="scanner_settings_end_char">End character</string>
+    <string name="scanner_settings_prefix">Prefix</string>
+    <string name="scanner_settings_postfix">Postfix</string>
+    <string name="scanner_settings_sound">Sound</string>
+    <string name="scanner_settings_sound_on">Sound on</string>
+    <string name="scanner_settings_sound_off">Sound off</string>
+    <string name="scanner_settings_vibration">Vibration</string>
+    <string name="scanner_settings_vibration_on">Vibration on</string>
+    <string name="scanner_settings_vibration_off">Vibration off</string>
+    <string name="scanner_settings_other">Other</string>
+    <string name="scanner_settings_type_title">Code Type Settings</string>
+    <string name="scanner_settings_type_summary">Which types to be supported</string>
+    <string name="scanner_failed_to_enable">Failed to enable scanner.</string>
+    <string name="scanner_failed_to_disable">Failed to disable scanner.</string>
+
+    <string name="code_type_failed_to_enable">Failed to enable this type of code,please try again.</string>
+    <string name="code_type_failed_to_disable">Failed to disable this type of code,please try again.</string>
+    <string name="scanner_is_setting">Scanner is setting,please wait!</string>
+    <string name="scanner_is_initializing">Scanner is initializing,please wait!</string>
+    <string name="scanner_set_types_later">Scanner is initializing,please set types later!</string>
+    <string name="scanner_init_success">Scanner is initialized successfully!</string>
+    <string name="scanner_init_failed">Failed to initialize scanner.</string>
+
+    <string name="scanner_settings_urljump">扫到网址跳转</string>
+    <string name="scanner_settings_urljump_on">已开启网址跳转</string>
+    <string name="scanner_settings_urljump_off">已关闭网址跳转</string>
     <!-- 15693 -->
     <string name="init">初始化</string>
     <string name="find">寻卡</string>
@@ -334,6 +382,8 @@
     <string name="info_write_success">成功向标签写入数据</string>
     <string name="info_tag_write_error">标签写入出错</string>
     <string name="read_time">读取次数：</string>
+    <string name="readtime">读取时间：</string>
+
     <string name="read_success">读取成功！</string>
     <string name="read_fail">读取失败！</string>
     <string name="length_zero">数据长度不能为0！</string>
@@ -419,7 +469,7 @@
     <string name="button_ReadIBAN"> 读卡号</string>
 
     <!-- SoftDecodingActivity -->
-    <string name="scanner_status">扫描仪当前状态：</string>
+    <string name="scanner_status">扫描仪状态：</string>
     <string name="scanner_loop">循环扫描：</string>
     <string name="clear_scanner_time">清空</string>
     <string name="scanner_total">总共：</string>
@@ -434,6 +484,13 @@
     <string name="suffix">后缀：</string>
     <string name="volume">音量：</string>
     <string name="playone_mode">声音和震动：</string>
+    <string name="scan_continue">连续扫码</string>
+    <string name="scan_stop">关闭连扫</string>
+    <string name="scan_clean">清空</string>
+    <string name="outmode">输出模式:</string>
+    <string name="endchar">结束字符:</string>
+    <string name="effect">声音和震动:</string>
+    <string name="showtoast">是否打印吐司：</string>
 
     <string-array name="output_mode_array">
         <item>复制粘贴模式</item>
@@ -540,6 +597,7 @@
     <string name="m1_io">I/O操作功能</string>
     <string name="m1_write_numblock">写入指定块数据</string>
     <string name="m1_update_numblock">修改指定块密码</string>
+    <string name="m1_update_numsector">修改指定扇区密码</string>
     <string name="m1_get_numblock">获取指定块数据</string>
     <string name="m1_str_get_success">获取卡号成功</string>
     <string name="m1_str_update_pwd_success">修改密码成功</string>
@@ -663,11 +721,38 @@
     <string name="hd_error_length">匹配的位长度数据长度不一致</string>
     <string name="hd_null_mask">匹配的数据为空</string>
     <string name="hd_more_than_20">起始信道和信道数之和不能大于20</string>
+    <string name="scan_time">扫描间隔:</string>
+    <string name="autoclear">是否自清:</string>
     <string-array name="membank">
         <item>标签信息区</item>
         <item>编码区</item>
         <item>用户区</item>
     </string-array>
+
+
+    <string name="open_device">打开设备</string>
+    <string name="close_device">关闭设备</string>
+    <string name="loading">正在加载</string>
+    <string name="preparing_device">设备正在准备，请稍候……</string>
+    <string name="closing_device">设备正在关闭，请稍候……</string>
+
+    <!-- 指纹仪 -->
+    <string name="fingerprint">指纹仪</string>
+    <!--<string name="fps_sn">指纹传感器序列号：<xliff:g>%1$s</xliff:g></string>-->
+    <!--<string name="fps_fw">指纹传感器内部固件版本号：<xliff:g>%1$s</xliff:g></string>-->
+    <string name="fp_collect_info">单次指纹采集信息：</string>
+    <string name="capture">取图：</string>
+    <string name="extract">提取特征：</string>
+    <string name="generalize">合成模板：</string>
+    <string name="verify">比对：</string>
+    <string name="enroll_fp">录入指纹</string>
+    <string name="verify_fp">比对指纹(1:1)</string>
+    <string name="identify_fp">搜索指纹(1:N)</string>
+    <string name="verify_fp2">比对指纹</string>
+    <string name="identify_fp2">搜索指纹</string>
+    <string name="clear_fp_db">清空指纹库</string>
+    <string name="show_fp">显示指纹</string>
+    <string name="show_devinfos">查看设备信息</string>
 
     <string name="press_finger">请按压手指。</string>
     <string name="enrolling">正在注册指纹……</string>
@@ -681,10 +766,132 @@
     <string name="fingerprint_device_power_off_failed">指纹仪断电失败！</string>
     <string name="algorithm_initialization_failed">Bione算法初始化失败！</string>
     <string name="algorithm_cleanup_failed">Bione算法反初始化失败！</string>
+    <string name="algorithm_cleanup_success">Bione算法反初始化成功！</string>
+
+    <string name="not_done">未进行</string>
+    <string name="capture_image_success">指纹图像获取成功！</string>
+    <string name="capture_image_failed">采集指纹图像失败！</string>
     <string name="enroll_failed_because_of_extract_feature">录入失败，提取特征出错！</string>
     <string name="enroll_failed_because_of_make_template">录入失败，生成模板出错！</string>
     <string name="enroll_failed_because_of_get_id">录入失败，获取可用的指纹ID失败！</string>
     <string name="enroll_failed_because_of_error">录入失败！</string>
-    <string name="algorithm_cleanup_success">Bione算法反初始化成功！</string>
+    <string name="enroll_success">录入成功！</string>
+    <string name="enrolled_id">指纹ID为<xliff:g>%1$d</xliff:g>。</string>
+    <string name="verify_failed_because_of_extract_feature">比对失败，提取特征出错！</string>
+    <string name="verify_failed_because_of_error">比对失败！</string>
+    <string name="fingerprint_not_match">指纹不匹配！</string>
+    <string name="fingerprint_match">指纹匹配！</string>
+    <string name="fingerprint_similarity">指纹相似度为<xliff:g>%1$d</xliff:g>。</string>
+    <string name="identify_failed_because_of_extract_feature">比对失败，提取特征出错！</string>
+    <string name="identify_failed_because_of_error">比对失败！</string>
+    <string name="identify_match">验证成功！</string>
+    <string name="matched_id">匹配指纹ID为<xliff:g>%1$d</xliff:g>。</string>
+    <string name="clear_fingerprint_database_success">清空指纹库成功！</string>
+    <string name="clear_fingerprint_database_failed">清空指纹库失败！</string>
 
+    <!-- 身份证阅读机具 -->
+    <string name="idcard">二代身份证阅读机具</string>
+    <string name="idcard_sn">二代身份证阅读模块序列号：<xliff:g>%1$s</xliff:g></string>
+    <string name="name">姓名：</string>
+    <string name="sex">性别：</string>
+    <string name="nationality">民族：</string>
+    <string name="birthday">出生：</string>
+    <string name="address">住址：</string>
+    <string name="number">身份证号码：</string>
+    <string name="authority">签发机关：</string>
+    <string name="valid_date">有效期：</string>
+    <string name="fp_info">指纹信息：</string>
+    <string name="read_idcard">读取身份证</string>
+    <string name="read_idcard_id">读取身份证物理ID</string>
+    <string name="place_idcard">请将身份证靠近感应区。</string>
+    <string name="id_card_reader_open_success">身份证阅读机具打开成功！</string>
+    <string name="id_card_reader_open_failed">身份证阅读机具打开失败！</string>
+    <string name="id_card_reader_close_success">身份证阅读机具关闭成功！</string>
+    <string name="id_card_reader_close_failed">身份证阅读机具关闭失败！</string>
+    <string name="id_card_reader_power_on_failed">身份证阅读机具上电失败！</string>
+    <string name="id_card_reader_power_off_failed">身份证阅读机具断电失败！</string>
+    <string name="id_card_read_success">二代身份证读取成功！</string>
+    <string name="id_card_not_exist_or_reread">请将二代身份证移开后重新放置在读卡区域！</string>
+    <string name="id_card_read_failed">读卡失败！</string>
+    <string name="long_term">长期</string>
+    <string name="exist">存在</string>
+    <string name="not_exist">不存在</string>
+
+    <!-- 错误代码 -->
+    <string name="info_error">错误</string>
+    <string name="operation_successful">操作成功！</string>
+    <string name="error_operation_failed">操作失败！</string>
+    <string name="error_wrong_connection">连接错误导致操作失败！</string>
+    <string name="error_device_busy">设备忙导致操作失败！</string>
+    <string name="error_device_not_open">设备未打开导致操作失败！</string>
+    <string name="error_timeout">传输超时导致操作失败！</string>
+    <string name="error_no_permission">无操作权限导致操作失败！</string>
+    <string name="error_wrong_parameter">输入参数错误导致操作失败！</string>
+    <string name="error_decode">解码错误导致操作失败！</string>
+    <string name="error_initialization_failed">设备初始化失败导致操作失败！</string>
+    <string name="error_unknown">未知错误导致操作失败！</string>
+    <string name="error_not_support">不被支持的操作导致操作失败！</string>
+    <string name="error_not_enough_memory">内存不足导致操作失败！</string>
+    <string name="error_device_not_found">未能找到设备导致操作失败！</string>
+    <string name="error_device_reopen">设备重复打开导致操作失败！</string>
+    <string name="error_algorithm_initialization_failed">指纹算法初始化失败导致操作失败！</string>
+    <string name="error_invalid_feature_data">指纹特征数据错误导致操作失败！</string>
+    <string name="error_bad_image">指纹图像太差导致操作失败！</string>
+    <string name="error_not_match">指纹不匹配导致操作失败！</string>
+    <string name="error_low_point">指纹比对分值太低导致操作失败！</string>
+    <string name="error_no_finger">无手指导致操作失败！</string>
+    <string name="error_no_result">指纹库中无匹配指纹导致操作失败！</string>
+    <string name="error_out_of_bound">输入指纹ID越界导致操作失败！</string>
+    <string name="error_database_full">指纹库已满导致操作失败！</string>
+    <string name="error_library_missing">指纹算法库丢失导致操作失败！</string>
+    <string name="error_algorithm_uninitialize">指纹算法未初始化导致操作失败！</string>
+    <string name="error_algorithm_reinitialize">指纹算法重复初始化导致操作失败！</string>
+    <string name="error_repeated_enroll">指纹重复注册导致操作失败！</string>
+    <string name="error_not_enrolled">指纹未注册导致操作失败！</string>
+    <string name="error_no_card">未能找到卡片导致操作失败！</string>
+    <string name="error_invalid_card">卡片无效导致操作失败！</string>
+    <string name="error_invalid_decode_lib">卡片解码库无效导致操作失败！</string>
+    <string name="error_other">其它错误导致操作失败！</string>
+
+
+    <string name="open">打开</string>
+    <string name="close">关闭</string>
+    <string name="GenRandom">获取随机数</string>
+    <string name="sendTest">0102030405060708090a0b0c0d0e0f</string>
+    <string name="LogIn">登录</string>
+    <string name="LogOut">登出</string>
+    <string name="GetKeyParam">GetKeyParam</string>
+    <string name="Clear">清除打印</string>
+    <string name="GenRsaKeyPair">获取公私钥对</string>
+    <string name="Sign">签名</string>
+    <string name="ListFile">ListFile</string>
+    <string name="CreatFile">CreatFile</string>
+    <string name="DelFile">DelFile</string>
+    <string name="WriteFile">WriteFile</string>
+    <string name="ReadFile">ReadFile</string>
+    <string name="OpenCon">OpenContainer</string>
+    <string name="GetPubLicKey">GetPubKey</string>
+    <string name="SetCertificate">设置证书</string>
+    <string name="GetCertificate">获取证书</string>
+    <string name="SymDecrypt">SymDecrypt</string>
+    <string name="SymEncrypt">SymEncrypt</string>
+    <string name="ChangePIN">更改pin</string>
+    <string name="UnLock">UnLock</string>
+    <string name="LoginType">是否选择管理员用户</string>
+    <string name="Exit">退出</string>
+    <string name="Init">初始化</string>
+    <string name="DelKey">DelKey</string>
+    <string name="PriKeyDecrypt">PriKeyDecrypt</string>
+    <string name="pleaseImput">请输入pin：</string>
+    <string name="stop">停止</string>
+    <string name="OldPin">222222</string>
+    <string name="CleanFlag">清除标识</string>
+    <string name="NewPin">333333</string>
+    <string name="finger_version">指纹版本</string>
+    <string name="finger_collect_success">指纹采集成功!</string>
+    <string name="finger_collect_failure">指纹采集失败!</string>
+
+
+    <string name="load_user_card">扫描身份中</string>
+    <string name="user_card">身份识别</string>
 </resources>

@@ -58,15 +58,16 @@
         android:label="@string/app_name"
         android:roundIcon="@drawable/logo_video"
         android:theme="@style/MyAppBaseTheme">
-        <activity
-            android:name=".MainActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize">
+        <activity android:name=".RouterActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"></activity>
         <activity
             android:name=".zxing.activity.CaptureActivity"
             android:screenOrientation="portrait" />
@@ -111,7 +112,9 @@
         <activity
             android:name=".ui.video.FtpSettingActivity"
             android:configChanges="orientation|keyboardHidden|screenSize" />
-        <activity android:name=".ui.HomeActivity" />
+        <activity
+            android:name=".ui.HomeActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize" />
 
         <service
             android:name=".service.ali.AliUploadFileService"
@@ -121,7 +124,6 @@
         <activity android:name=".ui.video.AliFileActivity" />
         <activity android:name=".ui.OnlyKeySettingActivity" />
         <activity android:name=".ui.SnActivity" />
-        <activity android:name=".card.VerifyActivity" />
 
         <receiver
             android:name=".receiver.NetworkReceiver"
@@ -155,8 +157,21 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".ui.video.UsbCameraActivity"
-            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".ui.video.UsbCameraActivity"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/video_device_filter" />
+        </activity>
+        <activity android:name=".CheckSnActivity">
+
+        </activity>
+
     </application>
 
 </manifest>

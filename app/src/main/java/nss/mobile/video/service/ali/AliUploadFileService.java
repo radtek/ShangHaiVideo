@@ -190,7 +190,13 @@ public class AliUploadFileService extends Service {
         Map<String, Object> params = new HashMap<>();
         MobileKeyBean last = MobileKeyBean.getLast();
         params.put("box-code", last.getMobileKey());
-        long value = System.currentTimeMillis() / 1000;
+        AliFileBean file = AliFileBean.getFile(uploadFile.getAbsolutePath());
+        long value = 0;
+        if (file != null) {
+            value = file.geteDate();
+        } else {
+            value = System.currentTimeMillis() / 1000;
+        }
         params.put("end-at", value);
         params.put("filename", uploadFile.getName());
         params.put("done", "失败");
@@ -225,7 +231,14 @@ public class AliUploadFileService extends Service {
         MobileKeyBean last = MobileKeyBean.getLast();
         params.put("box-code", last.getMobileKey());
         params.put("filename", uploadFile.getName());
-        params.put("begin-at", System.currentTimeMillis() / 1000);
+        AliFileBean file = AliFileBean.getFile(uploadFile.getAbsolutePath());
+        long value = 0;
+        if (file != null) {
+            value = file.getsDate();
+        } else {
+            value = System.currentTimeMillis() / 1000;
+        }
+        params.put("begin-at", value);
         params.put("size", uploadFile.length());
         params.put("oss-guid", aliOssToken.getVideoId());
         Map<String, Object> map = mParams.get(uploadFile.getAbsolutePath());
@@ -252,7 +265,14 @@ public class AliUploadFileService extends Service {
                 final Map<String, Object> params = new HashMap<>();
                 MobileKeyBean last = MobileKeyBean.getLast();
                 params.put("box-code", last.getMobileKey());
-                params.put("end-at", System.currentTimeMillis() / 1000);
+                AliFileBean file = AliFileBean.getFile(uploadFile.getAbsolutePath());
+                long value = 0;
+                if (file != null) {
+                    value = file.geteDate();
+                } else {
+                    value = System.currentTimeMillis() / 1000;
+                }
+                params.put("end-at", value);
                 params.put("duration", (int) video.getDuration());
                 params.put("view-preview", video.getCoverURL());
                 //                            params.put("viewVod",);//点播地址
